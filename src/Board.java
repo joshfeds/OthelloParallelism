@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.awt.Point;
 
 public class Board {
@@ -7,6 +8,11 @@ public class Board {
     private int boardSize;
     private int[][] boardState;
     private int currentPlayer = 1;
+
+    private int[] xOffsets = {0, 1, 1,  1,  0, -1, -1, -1};
+    private int[] yOffsets = {1, 1, 0, -1, -1, -1,  0,  1};
+    // Amount to add to some index (mod size) to get the opposite direction.
+    private final int OPP_DIRECTION = 4;
     
     public Board(int boardSize) {
         this.boardSize = boardSize;
@@ -29,8 +35,11 @@ public class Board {
         }
     }
 
-    public HashSet<Point> getValidMoves() {
-        HashSet<Point> currentSpots = new HashSet<>();
+    // Return a mapping of valid spots with the directions that can be filled from them.
+    // Directions are in the form of an index into the offsets arrays.
+    public HashMap<Point, HashSet<Integer>> getValidMoves() {
+        HashMap<Point, HashSet<Integer>> moves = new HashMap<>();
+
         // Clockwise coordinates around a spot to check for valid moves
         int[] xOffsets = {0, 1, 1,  1,  0, -1, -1, -1};
         int[] yOffsets = {1, 1, 0, -1, -1, -1,  0,  1};
@@ -40,18 +49,25 @@ public class Board {
                 if (this.boardState[i][j] != this.currentPlayer) {
                     continue;
                 }
+
                 Point currentPoint = new Point(i, j);
                 for (int k = 0; k < xOffsets.length; k++) {
                     Point foundPoint = findValidSpot(currentPoint, xOffsets[k], yOffsets[k]);
                     if (foundPoint != null) {
-                        currentSpots.add(foundPoint);
+                        if (moves.containsKey(foundPoint)) {
+                            // Add the opposite direction to the map.
+                            moves.get(foundPoint).add((k + OPP_DIRECTION) % xOffsets.length);
+                        } else {
+                            HashSet<Integer> direction = new HashSet<>();
+                            direction.add((k + OPP_DIRECTION) % xOffsets.length); // Opposite direction.
+                            moves.put(foundPoint, direction);
+                        }
                     }
-                }
-                
+                }  
             }
         }
 
-        return currentSpots;
+        return moves;
     }
 
     private Point findValidSpot(Point currentPoint, int xInc, int yInc) {
@@ -79,6 +95,25 @@ public class Board {
             return new Point(currentX, currentY);
         } else {
             return null;
+        }
+    }
+
+    // Modifies the board to make the valid move.
+    public void makeMove(Point validMove, HashSet<Integer> directions)
+    {
+        // Flip the valid move location to the current player's color.
+        boardState[validMove.x][validMove.y] = this.currentPlayer;
+
+        for (Integer direction: directions) {
+            int curX = validMove.x + xOffsets[direction];
+            int curY = validMove.y + yOffsets[direction];
+
+            // Flip tiles until we hit the our own tile.
+            while (boardState[curX][curY] != this.currentPlayer) {
+                boardState[curX][curY] = this.currentPlayer;
+                curX += xOffsets[direction];
+                curY += yOffsets[direction];
+            }
         }
     }
 }

@@ -8,6 +8,7 @@ public class Board {
     private int boardSize;
     private int[][] boardState;
     private int currentPlayer = 1;
+    private int numRemainingSpots;
 
     private int[] xOffsets = {0, 1, 1,  1,  0, -1, -1, -1};
     private int[] yOffsets = {1, 1, 0, -1, -1, -1,  0,  1};
@@ -24,6 +25,7 @@ public class Board {
             this.boardState[halfway - spot[0]][halfway - spot[1]] = spot[2];
         }
 
+        this.numRemainingSpots = boardSize - 4; // Board initialized with 4 spots taken.
     }
 
     public void printBoard() {
@@ -115,5 +117,17 @@ public class Board {
                 curY += yOffsets[direction];
             }
         }
+
+        // Toggle the current player.
+        this.numRemainingSpots--;
+        this.currentPlayer = this.currentPlayer == 1 ? 2 : 1;
+    }
+
+    public int getNumRemainingSpots() {
+        return this.numRemainingSpots;
+    }
+
+    public int getCurrentPlayer() {
+        return this.currentPlayer;
     }
 }

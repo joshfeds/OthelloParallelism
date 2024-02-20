@@ -14,6 +14,8 @@ public class Board {
     private int[] yOffsets = {1, 1, 0, -1, -1, -1,  0,  1};
     // Amount to add to some index (mod size) to get the opposite direction.
     private final int OPP_DIRECTION = 4;
+    // Maps valid moves to directions to fill in for current player.
+    private HashMap<Point, HashSet<Integer>> validMoves;
     
     public Board(int boardSize) {
         this.boardSize = boardSize;
@@ -25,7 +27,8 @@ public class Board {
             this.boardState[halfway - spot[0]][halfway - spot[1]] = spot[2];
         }
 
-        this.numRemainingSpots = boardSize - 4; // Board initialized with 4 spots taken.
+        this.validMoves = null;
+        this.numRemainingSpots = (boardSize * boardSize) - 4; // Board initialized with 4 spots taken.
     }
 
     public void printBoard() {
@@ -40,7 +43,8 @@ public class Board {
     // Return a mapping of valid spots with the directions that can be filled from them.
     // Directions are in the form of an index into the offsets arrays.
     public HashMap<Point, HashSet<Integer>> getValidMoves() {
-        HashMap<Point, HashSet<Integer>> moves = new HashMap<>();
+        this.validMoves = new HashMap<>();
+        HashSet<Point> retVal = new HashSet<>();
 
         // Clockwise coordinates around a spot to check for valid moves
         int[] xOffsets = {0, 1, 1,  1,  0, -1, -1, -1};
@@ -56,20 +60,22 @@ public class Board {
                 for (int k = 0; k < xOffsets.length; k++) {
                     Point foundPoint = findValidSpot(currentPoint, xOffsets[k], yOffsets[k]);
                     if (foundPoint != null) {
-                        if (moves.containsKey(foundPoint)) {
+                        if (validMoves.containsKey(foundPoint)) {
                             // Add the opposite direction to the map.
-                            moves.get(foundPoint).add((k + OPP_DIRECTION) % xOffsets.length);
+                            validMoves.get(foundPoint).add((k + OPP_DIRECTION) % xOffsets.length);
                         } else {
                             HashSet<Integer> direction = new HashSet<>();
                             direction.add((k + OPP_DIRECTION) % xOffsets.length); // Opposite direction.
-                            moves.put(foundPoint, direction);
+                            validMoves.put(foundPoint, direction);
                         }
+
+                        retVal.add(foundPoint);
                     }
                 }  
             }
         }
 
-        return moves;
+        return retVal;
     }
 
     private Point findValidSpot(Point currentPoint, int xInc, int yInc) {
@@ -101,12 +107,19 @@ public class Board {
     }
 
     // Modifies the board to make the valid move.
-    public void makeMove(Point validMove, HashSet<Integer> directions)
+    public void makeMove(Point validMove)
     {
+        // Make sure the move is in the global map of valid moves.
+        HashSet<Integer> dirs = validMoves.get(validMove);
+        if (!dirs) {
+            // todo better error handling?
+            System.out.println("An error happened");
+            return;
+        }
         // Flip the valid move location to the current player's color.
         boardState[validMove.x][validMove.y] = this.currentPlayer;
 
-        for (Integer direction: directions) {
+        for (Integer direction: dirs) {
             int curX = validMove.x + xOffsets[direction];
             int curY = validMove.y + yOffsets[direction];
 
@@ -118,9 +131,10 @@ public class Board {
             }
         }
 
-        // Toggle the current player.
+        // Toggle the current player and reset valid moves mapping.
         this.numRemainingSpots--;
         this.currentPlayer = this.currentPlayer == 1 ? 2 : 1;
+        validMoves = null;
     }
 
     public int getNumRemainingSpots() {

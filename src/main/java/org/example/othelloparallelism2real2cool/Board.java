@@ -1,3 +1,5 @@
+package org.example.othelloparallelism2real2cool;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;

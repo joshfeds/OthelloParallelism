@@ -1,5 +1,5 @@
 // NOTE: If you are reading this in the repo, this may not compile yet, as certain JavaFX modules must be set in the project first
-package com.example.javafxtest;
+package org.example.othelloparallelism2real2cool;
 
 // no wildcard imports :[
 import javafx.application.Application;

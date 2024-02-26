@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.awt.Point;
 
 public class Board {
-
+    public final boolean DEBUGGING = true;
     private int boardSize;
     private int[][] boardState;
     private int currentPlayer = 1;
@@ -43,6 +43,7 @@ public class Board {
     // Return a mapping of valid spots with the directions that can be filled from them.
     // Directions are in the form of an index into the offsets arrays.
     public HashSet<Point> getValidMoves() {
+        if (DEBUGGING)
         System.out.println("\nGetting valid moves for " + this.currentPlayer);
         printBoard();
         this.validMoves = new HashMap<>();
@@ -74,15 +75,17 @@ public class Board {
                         directions.add(dir);
                         this.validMoves.put(foundPoint, directions);
                         retVal.add(foundPoint);
-
-                        System.out.println("For " + foundPoint + ": added direction " + dir);
-                        System.out.println("Directions: " + directions);
-                        System.out.println("Sanity check " + this.validMoves.get(foundPoint));
+                        if (DEBUGGING) {
+                            System.out.println("For " + foundPoint + ": added direction " + dir);
+                            System.out.println("Directions: " + directions);
+                            System.out.println("Sanity check " + this.validMoves.get(foundPoint));
+                        }
                     }
                 }  
             }
         }
 
+        if (DEBUGGING)
         System.out.println();
         return retVal;
     }
@@ -96,26 +99,31 @@ public class Board {
         boolean foundEmptyTile = false;
         boolean foundMyTile = false;
 
+        if (DEBUGGING)
         System.out.println("\nFinding move for " + currentPoint + " player " + this.currentPlayer);
 
         while (validIdx(currentX, currentY)) {
             tempSetBoardState(currentX, currentY, 9);
 
             if (!foundOppositeTile && this.boardState[currentX][currentY] == oppositePlayer) {
+                if (DEBUGGING)
                 System.out.println("Found opp tile");
                 foundOppositeTile = true;
             }
 
             if (!foundEmptyTile && onValidMove && this.boardState[currentX][currentY] == 0) {
+                if (DEBUGGING)
                 System.out.println("Found 0 (move) tile");
                 foundEmptyTile = true;
             }
 
             if (!foundMyTile && foundOppositeTile && this.boardState[currentX][currentY] == this.currentPlayer) {
+                if (DEBUGGING)
                 System.out.println("Found my (end) tile");
                 foundMyTile = true;
                 break;
             }
+            if (DEBUGGING)
             System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 
             currentX += xInc;
@@ -123,6 +131,7 @@ public class Board {
             onValidMove = false;
         }
 
+        if (DEBUGGING)
         System.out.println();
 
         if (foundOppositeTile && foundMyTile) {
@@ -135,13 +144,16 @@ public class Board {
     // todo delete this? maybe not. for debugging
     // Returns whether the proposed move is valid for the current board.
     public boolean checkMoveValidity(Point mv) {
+        if (DEBUGGING)
         System.out.println("\nChecking " + mv + "'s validity:");
 
         // Check for simple indexing errors.
         if (mv.x < 0 || mv.y < 0) {
+            if (DEBUGGING)
             System.out.println(mv + " is not valid: index less than 0\n");
             return false;
         } else if (mv.x >= this.boardSize || mv.y >= this.boardSize) {
+            if (DEBUGGING)
             System.out.println(mv + " is not valid: index greater than " + (this.boardSize - 1) + "\n");
             return false;
         }
@@ -149,6 +161,7 @@ public class Board {
         // Check for associated directions for the move.
         HashSet<Integer> dirs = this.validMoves.get(mv);
         if (dirs == null) {
+            if (DEBUGGING)
             System.out.println(mv + " is not valid: it has no associated directions\n");
             return false;
         }
@@ -167,25 +180,33 @@ public class Board {
                 curY += yIncr;
 
                 if (curX < 0 || curY < 0) {
+                    if (DEBUGGING)
                     System.out.println(mv + " is not valid: to negative infinity and beyond!\n");
                     return false;
                 } else if (curX >= this.boardSize || curY >= this.boardSize) {
+                    if (DEBUGGING)
                     System.out.println(mv + " is not valid: to positive infinity and beyond!\n");
                     return false;
                 } else if (this.boardState[curX][curY] == 0) {
-                    System.out.println(mv + " is not valid: can't cover up this 0 spot:");
-                    tempSetBoardState(curX, curY, 9);
-                    System.out.println();
+                    if (DEBUGGING) {
+                        System.out.println(mv + " is not valid: can't cover up this 0 spot:");
+                        tempSetBoardState(curX, curY, 9);
+                        System.out.println();
+                    }
                     return false;
                 } else if (oppSpotsSeen < 1 && this.boardState[curX][curY] == this.currentPlayer) {
-                    System.out.println(mv + " is not valid: can't cover up my own spot:");
-                    tempSetBoardState(curX, curY, 9);
-                    System.out.println();
+                    if (DEBUGGING) {
+                        System.out.println(mv + " is not valid: can't cover up my own spot:");
+                        tempSetBoardState(curX, curY, 9);
+                        System.out.println();
+                    }
                     return false;
                 } else if (this.boardState[curX][curY] != opponent) {
-                    System.out.println(mv + " is not valid: there's a ghost on this spot:");
-                    printBoard();
-                    System.out.println();
+                    if (DEBUGGING) {
+                        System.out.println(mv + " is not valid: there's a ghost on this spot:");
+                        printBoard();
+                        System.out.println();
+                    }
                     return false;
                 }
 
@@ -202,9 +223,12 @@ public class Board {
     public void makeMove(Point validMove)
     {
         // Make sure the move is in the global map of valid moves.
+        if (DEBUGGING)
         System.out.println("\nMaking move " + validMove);
+        if (DEBUGGING)
         tempSetBoardState(validMove.x, validMove.y, 9);
         HashSet<Integer> dirs = validMoves.get(validMove);
+        if (DEBUGGING)
         System.out.println("Directions to travel: " + dirs);
         // if (dirs == null) {
         //     // todo better error handling?
@@ -222,12 +246,15 @@ public class Board {
             int curY = validMove.y + yOffsets[direction];
 
             // Flip tiles until we hit the our own tile.
+            if (DEBUGGING)
             System.out.println("Progress:");
             while (boardState[curX][curY] != this.currentPlayer) {
                 boardState[curX][curY] = this.currentPlayer;
                 curX += xOffsets[direction];
                 curY += yOffsets[direction];
+                if (DEBUGGING)
                 printBoard();
+                if (DEBUGGING)
                 System.out.println("================");
             }
         }
@@ -237,9 +264,11 @@ public class Board {
         this.currentPlayer = this.currentPlayer == 1 ? 2 : 1;
         validMoves = null;
 
-        System.out.println("After making the move:");
-        printBoard();
-        System.out.println();
+        if (DEBUGGING) {
+            System.out.println("After making the move:");
+            printBoard();
+            System.out.println();
+        }
     }
 
     // Check index validity. This is checked often.

@@ -20,19 +20,24 @@ public class MiniMax {
         ArrayList<Node> nodes = new ArrayList<>();
 
         // Each child represents one of the next possible valid moves.
-        HashMap<Point, HashSet<Integer>> valMoves = board.getValidMoves();
-        valMoves.keySet().forEach(pt -> {
-            Node newNode = new Node(pt, valMoves.get(pt), board.getCurrentPlayer(), isMax);
+        HashSet<Point> valMoves = board.getValidMoves();
+        System.out.println("This group's valid moves for " + board.getCurrentPlayer() + ":");
+        valMoves.forEach(pt -> {
+            System.out.println(pt);
+            board.tempSetBoardState(pt.x, pt.y, 9);
+            HashSet<Integer> dirs = board.getValidDirections(pt);
+            Node newNode = new Node(pt, dirs, board.getCurrentPlayer(), isMax);
             nodes.add(newNode);
         });
 
+        System.out.println();
         return nodes;
     }
 
     // From the parent, adds a leaf for each possible move.
     public void createLeaves(Node parent, Board board) {
         // Make the move specified in the parent node.
-        board.makeMove(parent.getMove(), parent.getDirections());
+        board.makeMove(parent.getMove());
         // board.printBoard();
 
         // Children are the opposite of their parent.

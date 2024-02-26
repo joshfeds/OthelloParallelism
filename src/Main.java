@@ -10,9 +10,9 @@ public class Main {
         // Make the game tree. Should not modify actual board.
         MiniMax gameTree = new MiniMax(8);
 
-        HashMap<Point, HashSet<Integer>> validMoves = board.getValidMoves();
+        HashSet<Point> validMoves = board.getValidMoves();
 
-        for (Point point : validMoves.keySet()) {
+        for (Point point : validMoves) {
             System.out.println(point);
         }
     }

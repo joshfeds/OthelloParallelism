@@ -42,7 +42,9 @@ public class Board {
 
     // Return a mapping of valid spots with the directions that can be filled from them.
     // Directions are in the form of an index into the offsets arrays.
-    public HashMap<Point, HashSet<Integer>> getValidMoves() {
+    public HashSet<Point> getValidMoves() {
+        System.out.println("\nGetting valid moves for " + this.currentPlayer);
+        printBoard();
         this.validMoves = new HashMap<>();
         HashSet<Point> retVal = new HashSet<>();
 
@@ -60,21 +62,28 @@ public class Board {
                 for (int k = 0; k < xOffsets.length; k++) {
                     Point foundPoint = findValidSpot(currentPoint, xOffsets[k], yOffsets[k]);
                     if (foundPoint != null) {
-                        if (validMoves.containsKey(foundPoint)) {
-                            // Add the opposite direction to the map.
-                            validMoves.get(foundPoint).add((k + OPP_DIRECTION) % xOffsets.length);
+                        // Add the direction discovered for the move to the mapping.
+                        HashSet<Integer> directions;
+                        int dir = (k + OPP_DIRECTION) % xOffsets.length;
+                        if (!this.validMoves.containsKey(foundPoint)) {
+                            directions = new HashSet<>();
                         } else {
-                            HashSet<Integer> direction = new HashSet<>();
-                            direction.add((k + OPP_DIRECTION) % xOffsets.length); // Opposite direction.
-                            validMoves.put(foundPoint, direction);
+                            directions = this.validMoves.get(foundPoint);
                         }
 
+                        directions.add(dir);
+                        this.validMoves.put(foundPoint, directions);
                         retVal.add(foundPoint);
+
+                        System.out.println("For " + foundPoint + ": added direction " + dir);
+                        System.out.println("Directions: " + directions);
+                        System.out.println("Sanity check " + this.validMoves.get(foundPoint));
                     }
                 }  
             }
         }
 
+        System.out.println();
         return retVal;
     }
 
@@ -82,40 +91,129 @@ public class Board {
         int currentX = currentPoint.x + xInc;
         int currentY = currentPoint.y + yInc;
         int oppositePlayer = this.currentPlayer == 1 ? 2 : 1;
+        boolean onValidMove = true;
         boolean foundOppositeTile = false;
         boolean foundEmptyTile = false;
+        boolean foundMyTile = false;
 
-        while ((currentX < boardSize && currentX > 0) && (currentY < boardSize && currentY > 0)) {
+        System.out.println("\nFinding move for " + currentPoint + " player " + this.currentPlayer);
+
+        while (validIdx(currentX, currentY)) {
+            tempSetBoardState(currentX, currentY, 9);
+
             if (!foundOppositeTile && this.boardState[currentX][currentY] == oppositePlayer) {
+                System.out.println("Found opp tile");
                 foundOppositeTile = true;
             }
 
-            if (!foundEmptyTile && this.boardState[currentX][currentY] == 0) {
+            if (!foundEmptyTile && onValidMove && this.boardState[currentX][currentY] == 0) {
+                System.out.println("Found 0 (move) tile");
                 foundEmptyTile = true;
+            }
+
+            if (!foundMyTile && foundOppositeTile && this.boardState[currentX][currentY] == this.currentPlayer) {
+                System.out.println("Found my (end) tile");
+                foundMyTile = true;
                 break;
             }
+            System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 
             currentX += xInc;
             currentY += yInc;
+            onValidMove = false;
         }
 
-        if (foundEmptyTile && foundOppositeTile) {
+        System.out.println();
+
+        if (foundOppositeTile && foundMyTile) {
             return new Point(currentX, currentY);
         } else {
             return null;
         }
     }
 
+    // todo delete this? maybe not. for debugging
+    // Returns whether the proposed move is valid for the current board.
+    public boolean checkMoveValidity(Point mv) {
+        System.out.println("\nChecking " + mv + "'s validity:");
+
+        // Check for simple indexing errors.
+        if (mv.x < 0 || mv.y < 0) {
+            System.out.println(mv + " is not valid: index less than 0\n");
+            return false;
+        } else if (mv.x >= this.boardSize || mv.y >= this.boardSize) {
+            System.out.println(mv + " is not valid: index greater than " + (this.boardSize - 1) + "\n");
+            return false;
+        }
+
+        // Check for associated directions for the move.
+        HashSet<Integer> dirs = this.validMoves.get(mv);
+        if (dirs == null) {
+            System.out.println(mv + " is not valid: it has no associated directions\n");
+            return false;
+        }
+
+        // Check othello board for valid move positioning.
+        int opponent = this.currentPlayer == 1 ? 2 : 1;
+        int oppSpotsSeen = 0;
+        for (Integer d : dirs) {
+            int curX = mv.x;
+            int curY = mv.y;
+            int xIncr = xOffsets[d];
+            int yIncr = yOffsets[d];
+
+            while (true) {
+                curX += xIncr;
+                curY += yIncr;
+
+                if (curX < 0 || curY < 0) {
+                    System.out.println(mv + " is not valid: to negative infinity and beyond!\n");
+                    return false;
+                } else if (curX >= this.boardSize || curY >= this.boardSize) {
+                    System.out.println(mv + " is not valid: to positive infinity and beyond!\n");
+                    return false;
+                } else if (this.boardState[curX][curY] == 0) {
+                    System.out.println(mv + " is not valid: can't cover up this 0 spot:");
+                    tempSetBoardState(curX, curY, 9);
+                    System.out.println();
+                    return false;
+                } else if (oppSpotsSeen < 1 && this.boardState[curX][curY] == this.currentPlayer) {
+                    System.out.println(mv + " is not valid: can't cover up my own spot:");
+                    tempSetBoardState(curX, curY, 9);
+                    System.out.println();
+                    return false;
+                } else if (this.boardState[curX][curY] != opponent) {
+                    System.out.println(mv + " is not valid: there's a ghost on this spot:");
+                    printBoard();
+                    System.out.println();
+                    return false;
+                }
+
+                if (this.boardState[curX][curY] == this.currentPlayer) {
+                    break;
+                }
+            }
+        }
+
+        return true;
+    }
+
     // Modifies the board to make the valid move.
     public void makeMove(Point validMove)
     {
         // Make sure the move is in the global map of valid moves.
+        System.out.println("\nMaking move " + validMove);
+        tempSetBoardState(validMove.x, validMove.y, 9);
         HashSet<Integer> dirs = validMoves.get(validMove);
-        if (!dirs) {
-            // todo better error handling?
-            System.out.println("An error happened");
-            return;
-        }
+        System.out.println("Directions to travel: " + dirs);
+        // if (dirs == null) {
+        //     // todo better error handling?
+        //     System.out.println("An error happened");
+        //     return;
+        // }
+
+        checkMoveValidity(validMove);
+
         // Flip the valid move location to the current player's color.
         boardState[validMove.x][validMove.y] = this.currentPlayer;
 
@@ -124,10 +222,13 @@ public class Board {
             int curY = validMove.y + yOffsets[direction];
 
             // Flip tiles until we hit the our own tile.
+            System.out.println("Progress:");
             while (boardState[curX][curY] != this.currentPlayer) {
                 boardState[curX][curY] = this.currentPlayer;
                 curX += xOffsets[direction];
                 curY += yOffsets[direction];
+                printBoard();
+                System.out.println("================");
             }
         }
 
@@ -135,6 +236,23 @@ public class Board {
         this.numRemainingSpots--;
         this.currentPlayer = this.currentPlayer == 1 ? 2 : 1;
         validMoves = null;
+
+        System.out.println("After making the move:");
+        printBoard();
+        System.out.println();
+    }
+
+    // Check index validity. This is checked often.
+    public boolean validIdx(int x, int y) {
+        if (x < 0 || y < 0) return false;
+        if (x >= this.boardSize || y >= this.boardSize) return false;
+
+        return true;
+    }
+
+    // Returns the valid directions associated with a move or null if move not found.
+    public HashSet<Integer> getValidDirections(Point move) {
+        return validMoves.get(move);
     }
 
     public int getNumRemainingSpots() {
@@ -143,5 +261,13 @@ public class Board {
 
     public int getCurrentPlayer() {
         return this.currentPlayer;
+    }
+
+    // todo delete (only for debugging)
+    public void tempSetBoardState(int x, int y, int val) {
+        int prevVal = this.boardState[x][y];
+        this.boardState[x][y] = val;
+        printBoard();
+        this.boardState[x][y] = prevVal;
     }
 }

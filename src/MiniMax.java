@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.awt.Point;
 
 public class MiniMax {
+    public final boolean DEBUGGING = true;
     private ArrayList<Node> roots;
 
     MiniMax(int boardSize) {
@@ -21,16 +22,25 @@ public class MiniMax {
 
         // Each child represents one of the next possible valid moves.
         HashSet<Point> valMoves = board.getValidMoves();
-        System.out.println("This group's valid moves for " + board.getCurrentPlayer() + ":");
+        if (valMoves == null) {
+            return null;
+        }
+
+        if (DEBUGGING)
+            System.out.println("This group's valid moves for " + board.getCurrentPlayer() + ":");
+
         valMoves.forEach(pt -> {
-            System.out.println(pt);
-            board.tempSetBoardState(pt.x, pt.y, 9);
+            if (DEBUGGING) {
+                System.out.println(pt);
+                board.tempSetBoardState(pt.x, pt.y, 9);
+                System.out.println();
+            }
+
             HashSet<Integer> dirs = board.getValidDirections(pt);
             Node newNode = new Node(pt, dirs, board.getCurrentPlayer(), isMax);
             nodes.add(newNode);
         });
 
-        System.out.println();
         return nodes;
     }
 
@@ -43,12 +53,17 @@ public class MiniMax {
         // Children are the opposite of their parent.
         boolean isChildMax = !parent.getIsMax();
         ArrayList<Node> children = createNodes(board, isChildMax);
-        parent.setChildren(children);
+        if (children != null) {
+            parent.setChildren(children);
 
-        // Recursively create leaves.
-        if (board.getNumRemainingSpots() > 0) {
-            for (Node child : children) {
-                createLeaves(child, board);
+            // Recursively create leaves.
+            if (board.getNumRemainingSpots() > 0) {
+                if (DEBUGGING)
+                    System.out.println("Board has " + board.getNumRemainingSpots() + " remaining");
+                    
+                for (Node child : children) {
+                    createLeaves(child, board);
+                }
             }
         }
     }

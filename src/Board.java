@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.awt.Point;
@@ -27,7 +28,7 @@ public class Board {
             this.boardState[halfway - spot[0]][halfway - spot[1]] = spot[2];
         }
 
-        this.validMoves = null;
+        updateValidMoves();
         this.numRemainingSpots = (boardSize * boardSize) - 4; // Board initialized with 4 spots taken.
     }
 
@@ -40,15 +41,13 @@ public class Board {
         }
     }
 
-    // Return a mapping of valid spots with the directions that can be filled from them.
-    // Directions are in the form of an index into the offsets arrays.
-    public HashSet<Point> getValidMoves() {
+    // Updates global mapping keeping track of valid moves for the current player.
+    public void updateValidMoves() {
         if (DEBUGGING) {
             System.out.println("\nGetting valid moves for " + this.currentPlayer);
             printBoard();
         }
         this.validMoves = new HashMap<>();
-        HashSet<Point> retVal = new HashSet<>();
 
         // Clockwise coordinates around a spot to check for valid moves
         int[] xOffsets = {0, 1, 1,  1,  0, -1, -1, -1};
@@ -75,7 +74,6 @@ public class Board {
 
                         directions.add(dir);
                         this.validMoves.put(foundPoint, directions);
-                        retVal.add(foundPoint);
                         if (DEBUGGING) {
                             System.out.println("For " + foundPoint + ": added direction " + dir);
                             System.out.println("Directions: " + directions);
@@ -90,7 +88,16 @@ public class Board {
             System.out.println("Returning from getValidMoves");
             System.out.println();
         }
-        return retVal;
+    }
+
+    // Returns the set of valid moves the current player can make.
+    public Set<Point> getValidMoves() {
+        return this.validMoves.keySet();
+    }
+
+    // Returns directions I need to travel from the move.
+    public HashSet<Integer> getDirections(Point move) {
+        return this.validMoves.get(move);
     }
 
     // Finds a valid spot from some spot belonging to the current player.
@@ -264,7 +271,7 @@ public class Board {
         // Toggle the current player and reset valid moves mapping.
         this.numRemainingSpots--;
         this.currentPlayer = this.currentPlayer == 1 ? 2 : 1;
-        validMoves = null;
+        updateValidMoves();
 
         if (DEBUGGING) {
             System.out.println("After making the move:");
@@ -300,5 +307,29 @@ public class Board {
         this.boardState[x][y] = val;
         printBoard();
         this.boardState[x][y] = prevVal;
+    }
+
+    public int [][] getBoardState() {
+        return this.boardState;
+    }
+
+    // Updates the board with the given information.
+    public void setBoardState(int [][] newState, int curPlayer) {
+        // Copy the information into the board's state.
+        for (int i = 0; i < this.boardSize; i++) {
+            for (int j = 0; j < this.boardSize; j++)
+                this.boardState[i][j] = newState[i][j];
+        }
+        this.currentPlayer = curPlayer;
+        updateValidMoves();
+    }
+
+    // todo do i need this?
+    // Copies the contents of the current board state into the array.
+    public void copyState(int [][] copyTo) {
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++)
+                copyTo[i][j] = this.boardState[i][j];
+        }
     }
 }

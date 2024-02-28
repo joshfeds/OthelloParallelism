@@ -7,77 +7,133 @@ import java.awt.Point;
 
 public class MiniMax {
     public final boolean DEBUGGING = true;
+    private int recID; // todo delete
+    private Board board;
+    private int boardSize;
     private ArrayList<Node> roots;
+
+    private int nodeId; // del
+    private int stateId;
 
     MiniMax(int boardSize) {
         // Initialize the ArrayList of nodes.
-        Board board = new Board(boardSize);
-        this.roots = createNodes(board, true);
-        makeTree(board);
+        this.nodeId = 0; // del
+        this.stateId = 0;
+        this.board = new Board(boardSize);
+        this.boardSize = boardSize;
+        if (DEBUGGING) {
+            System.out.println("Initial board:");
+            board.printBoard();
+            System.out.println("Initial Player: " + board.getCurrentPlayer() + "\n");
+        }
+        int [][] parentState = new int[boardSize][boardSize];
+        board.copyState(parentState);
+        TempNodeState initState = new TempNodeState(parentState, stateId++);
+        this.roots = createNodes(true, initState);
+        makeTree();
     }
 
     // Returns an arraylist of nodes representing the next possible moves for the current player.
-    public ArrayList<Node> createNodes(Board board, boolean isMax) {
+    public ArrayList<Node> createNodes(boolean isMax, TempNodeState state) {
+        if (DEBUGGING) System.out.println("Creating nodes:\n-");
         ArrayList<Node> nodes = new ArrayList<>();
 
         // Each child represents one of the next possible valid moves.
-        HashSet<Point> valMoves = board.getValidMoves();
-        if (valMoves == null) {
+        Set<Point> valMoves = board.getValidMoves();
+
+        if (valMoves.isEmpty()) {
+            if (DEBUGGING) System.out.println("Can't make any moves, returning null\n");
             return null;
         }
 
-        if (DEBUGGING)
-            System.out.println("This group's valid moves for " + board.getCurrentPlayer() + ":");
-
         valMoves.forEach(pt -> {
-            if (DEBUGGING) {
-                System.out.println(pt);
-                board.tempSetBoardState(pt.x, pt.y, 9);
-                System.out.println();
-            }
-
             HashSet<Integer> dirs = board.getValidDirections(pt);
-            Node newNode = new Node(pt, dirs, board.getCurrentPlayer(), isMax);
-            nodes.add(newNode);
+            Node node = new Node(state, pt, dirs, board.getCurrentPlayer(), isMax, nodeId++);
+            if (DEBUGGING) {
+                System.out.println("Node " + node);
+                System.out.println("Directions: " + dirs);
+                System.out.println("Board state:");
+                node.printState();
+                System.out.println("-");
+            }
+            nodes.add(node);
         });
 
+        if (DEBUGGING) System.out.println();
         return nodes;
     }
 
     // From the parent, adds a leaf for each possible move.
-    public void createLeaves(Node parent, Board board) {
-        // Make the move specified in the parent node.
+    public void createLeaves(Node parent) {
+        if (DEBUGGING) System.out.println("Leaves sprouting for " + parent);
+
+        // Set the board to the parent's state and make the parent's move.
+        board.setBoardState(parent.getStateBeforeMove(), parent.getPlayer());
+        if (DEBUGGING) {
+            System.out.println("global board state:");
+            board.printBoard();
+            System.out.println("parent's state:");
+            parent.printState();
+        }
         board.makeMove(parent.getMove());
-        // board.printBoard();
+        int [][] s = new int [boardSize][boardSize];
+        board.copyState(s);
+        TempNodeState childrenState = new TempNodeState(s, stateId++);
+        if (DEBUGGING) {
+            System.out.println("-\nglobal board after making the move:");
+            board.printBoard();
+            System.out.println("children's state: id " + childrenState.id);
+            for (int i = 0; i < childrenState.state.length; i++) {
+                for (int j = 0; j < childrenState.state.length; j++) {
+                    System.out.print(childrenState.state[i][j] + " ");
+                }
+                System.out.println();
+            }
+
+            System.out.println("parent's state after move was made:");
+            parent.printState();
+
+            if (childrenState.id == 25) {
+                System.out.println("\tChecking in on state id 0:");
+                roots.get(0).printState();
+            }
+        }
+
 
         // Children are the opposite of their parent.
         boolean isChildMax = !parent.getIsMax();
-        ArrayList<Node> children = createNodes(board, isChildMax);
+        ArrayList<Node> children = createNodes(isChildMax, childrenState);
+        parent.setChildren(children);
         if (children != null) {
-            parent.setChildren(children);
-
-            // Recursively create leaves.
-            if (board.getNumRemainingSpots() > 0) {
-                if (DEBUGGING)
-                    System.out.println("Board has " + board.getNumRemainingSpots() + " remaining");
-                    
-                for (Node child : children) {
-                    createLeaves(child, board);
-                }
+            for (Node child : children) {
+                createLeaves(child);
             }
         }
+        // if (children != null) {
+        //     parent.setChildren(children);
+
+        //     // Recursively create leaves.
+        //     if (board.getNumRemainingSpots() > 0) {
+        //         for (Node child : children) {
+        //             createLeaves(child);
+        //         }
+        //     }
+        // }
     }
 
-    public void makeTree(Board board) {
+    public void makeTree() {
         if (this.roots != null) {
             for (Node root : roots) {
-                createLeaves(root, board);
+                if (DEBUGGING) System.out.println("Tree sprouting for " + root + "\n");
+                createLeaves(root);
             }
         }
     }
 }
 
 class Node {
+    // private int [][] stateBeforeMove;
+    public TempNodeState state;
     private Point move;
     private HashSet<Integer> directions;
     private int player;
@@ -85,14 +141,23 @@ class Node {
     private int score;
     private List<Node> children;
 
+    private int id; // del
+
+
     // Constructor.
-    Node(Point move, HashSet<Integer> dirs, int player, boolean isMax) {
+    Node(TempNodeState state, Point move, HashSet<Integer> dirs, int player, boolean isMax, int id) {
+        this.state = state;
         this.move = move;
         this.directions = dirs;
         this.player = player;
         this.isMaxPlayer = isMax;
         this.score = 0; // todo actually compute score
         this.children = new ArrayList<>();
+        this.id = id; // del
+    }
+
+    public int [][] getStateBeforeMove() {
+        return this.state.state;
     }
 
     // Getters and setters.
@@ -112,7 +177,46 @@ class Node {
         return this.directions;
     }
 
+    public int getPlayer() {
+        return this.player;
+    }
+
     public void setChildren(ArrayList<Node> children) {
         this.children = children;
+    }
+
+    // todo delete (for debugging)
+    public String toString() {
+        return "(" + this.move.x + ", " + this.move.y + ") player " + this.player + " id n" + this.id;
+    }
+
+    // todo delete (for debugging)
+    public void printState() {
+        System.out.println("id = s" + this.state.id);
+        int [][] s = this.state.state;
+        for (int i = 0; i < s.length; i++) {
+            for (int j = 0; j < s.length; j++) {
+                System.out.print(s[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    // todo delete
+    public void printTempNine(int x, int y) {
+        int oldVal = this.state.state[x][y];
+        this.state.state[x][y] = 9;
+        printState();
+        this.state.state[x][y] = oldVal;
+    }
+}
+
+class TempNodeState {
+    public int [][] state;
+    public int id;
+
+    public TempNodeState(int [][] s, int id) {
+        this.state = s;
+        this.id = id;
     }
 }

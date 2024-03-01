@@ -39,7 +39,7 @@ public class MiniMax {
             Node node = new Node(state, pt, board.getCurrentPlayer(), isMax);
             if (DEBUGGING) {
                 System.out.println("Node " + node);
-                System.out.println("Directions: " + board.getDirections());
+                System.out.println("Directions: " + board.getDirections(pt));
                 System.out.println("Board state:");
                 node.printState();
                 System.out.println("-");

@@ -1,35 +1,41 @@
+import java.util.Set;
+import java.util.HashSet;
+import java.awt.Point;
+
 // Class to hold debugging functions
 
 public class Debug {
 
     // Returns whether the proposed move is valid for the current board.
-    public boolean checkMoveValidity(Point mv, Board board) {
+    public boolean checkMoveValidity(Point mv, Board board, int xIncr, int yIncr) {
         System.out.println("\nChecking " + mv + "'s validity:");
+
+        int currentPlayer = board.getCurrentPlayer();
+        int opponent = currentPlayer == 1 ? 2 : 1;
+        int oppSpotsSeen = 0;
+        Set<Integer> dirs = board.getDirections(mv);
+        int [][] boardState = board.getBoardState();
+        int boardSize = boardState.length;
 
         // Check for simple indexing errors.
         if (mv.x < 0 || mv.y < 0) {
             System.out.println(mv + " is not valid: index less than 0\n");
             return false;
-        } else if (mv.x >= this.boardSize || mv.y >= this.boardSize) {
-            System.out.println(mv + " is not valid: index greater than " + (this.boardSize - 1) + "\n");
+        } else if (mv.x >= boardSize || mv.y >= boardSize) {
+            System.out.println(mv + " is not valid: index greater than " + (boardSize - 1) + "\n");
             return false;
         }
 
         // Check for associated directions for the move.
-        HashSet<Integer> dirs = this.validMoves.get(mv);
         if (dirs == null) {
             System.out.println(mv + " is not valid: it has no associated directions\n");
             return false;
         }
 
         // Check othello board for valid move positioning.
-        int opponent = this.currentPlayer == 1 ? 2 : 1;
-        int oppSpotsSeen = 0;
         for (Integer d : dirs) {
             int curX = mv.x;
             int curY = mv.y;
-            int xIncr = xOffsets[d];
-            int yIncr = yOffsets[d];
 
             while (true) {
                 curX += xIncr;
@@ -38,20 +44,20 @@ public class Debug {
                 if (curX < 0 || curY < 0) {
                     System.out.println(mv + " is not valid: exited the board while travelling");
                     return false;
-                } else if (curX >= this.boardSize || curY >= this.boardSize) {
+                } else if (curX >= boardSize || curY >= boardSize) {
                     System.out.println(mv + " is not valid: exited the board while travelling");
                     return false;
-                } else if (oppSpotsSeen < 1 && this.boardState[curX][curY] == this.currentPlayer) {
+                } else if (oppSpotsSeen < 1 && boardState[curX][curY] == currentPlayer) {
                     System.out.println(mv + " is not valid: haven't seen the opposing player on the path");
                     return false;
-                } else if (this.boardState[curX][curY] != opponent && this.boardState[curX][curY] != this.currentPlayer) {
+                } else if (boardState[curX][curY] != opponent && boardState[curX][curY] != currentPlayer) {
                     System.out.println(mv + " is not valid: invalid path containing 0");
                     return false;
                 }
 
                 oppSpotsSeen++;
 
-                if (this.boardState[curX][curY] == this.currentPlayer) {
+                if (boardState[curX][curY] == currentPlayer) {
                     break;
                 }
             }

@@ -1,13 +1,19 @@
 // NOTE: If you are reading this in the repo, this may not compile yet, as certain JavaFX modules must be set in the project first
-package com.example.javafxtest;
+// the package statement below is just an artifact of whatever hacky intellij environment I set up just to get this to compile. we still don't have one set up for this project specifically
+package org.example.othelloparallelism2real2cool;
 
 // no wildcard imports :[
 import javafx.application.Application;
+import javafx.geometry.Pos;
+import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.util.HashSet;
@@ -15,9 +21,16 @@ import java.awt.Point;
 
 
 public class BoardDrawer extends Application {
+    public Stage stage;
+    public Scene mainMenuScene;
+    public Scene boardScene;
+    public Scene aboutScene;
     public static boolean DEBUG = true;
     public static int boardSize = 8;
     public static int cellSize = 100;
+    public static int windowLength = boardSize * cellSize;
+
+    public static Color BOARD_COLOR = Color.rgb(0, 159, 3);
     public static int[][] board =
             {
                     {1, 1, 1, 1, 1, 1, 1, 1},
@@ -30,19 +43,19 @@ public class BoardDrawer extends Application {
                     {0, 0, 0, 0, 0, 0, 0, 0}
             };
 
-    public void start(Stage stage) {
+    // Create the scene for the board
+    public Scene getBoardScene() {
         // All shapes must be added to this Group to be drawn
         Group root = new Group();
 
         // Draw border of board
-        Rectangle boardBorder = new Rectangle(boardSize * cellSize, boardSize * cellSize);
+        Rectangle boardBorder = new Rectangle(windowLength, windowLength);
         boardBorder.setFill(Color.rgb(0,0,0,0));
         boardBorder.setStroke(Color.rgb(0,0,0));
         boardBorder.setStrokeWidth(cellSize / 10.0);
         root.getChildren().add(boardBorder);
 
         double diskRadius = cellSize * 0.8 / 2.0;
-        Color BOARD_COLOR = Color.rgb(0, 159, 3);
 
         // Draw actual board
         for (int r = 0; r < boardSize; r++) {
@@ -139,10 +152,80 @@ public class BoardDrawer extends Application {
         // Draw window containing the group with all our cool graphics
         Scene scene = new Scene(root, 8 * cellSize, 8 * cellSize);
         scene.setFill(Color.rgb(220,220,220));
+        return scene;
+    }
+
+    // Draws the main menu scene containing all the buttons on startup.
+    public Scene getMainMenuScene() {
+        BorderPane borderPane = new BorderPane();
+
+        Rectangle boardBackground = new Rectangle(windowLength, windowLength);
+        boardBackground.setFill(BOARD_COLOR);
+        borderPane.getChildren().add(boardBackground);
+
+        Rectangle boardBorder = new Rectangle(windowLength, windowLength);
+        boardBorder.setFill(Color.rgb(0,0,0,0));
+        boardBorder.setStroke(Color.rgb(70,30,30));
+        boardBorder.setStrokeWidth(cellSize / 5.0);
+        borderPane.getChildren().add(boardBorder);
 
 
-        stage.setTitle("othello board yay");
-        stage.setScene(scene);
+        StackPane menuLayout = new StackPane();
+
+
+        Button playButton = new Button("Play");
+        Button aboutButton = new Button("About");
+        Button exitButton = new Button("Exit");
+
+        styleButton((playButton));
+        styleButton((aboutButton));
+        styleButton((exitButton));
+
+
+
+        playButton.setOnAction(e -> stage.setScene(boardScene));
+        aboutButton.setOnAction(e -> stage.setScene(aboutScene));
+        exitButton.setOnAction(e -> System.exit(0));
+
+        menuLayout.getChildren().addAll(playButton, aboutButton, exitButton);
+        StackPane.setAlignment(playButton, Pos.TOP_CENTER);
+        StackPane.setAlignment(aboutButton, Pos.CENTER);
+        StackPane.setAlignment(exitButton, Pos.BOTTOM_CENTER);
+
+        borderPane.setCenter(menuLayout);
+        borderPane.setPadding(new Insets((double) windowLength / 4));
+
+
+        return new Scene(borderPane, windowLength, windowLength);
+    }
+
+    public static void styleButton(Button button)
+    {
+        Background base = new Background(new BackgroundFill(Color.rgb(76,175,80), new CornerRadii(16), Insets.EMPTY));
+        Background hover = new Background(new BackgroundFill(Color.rgb(120,210,130), new CornerRadii(16), Insets.EMPTY));
+        Background click = new Background(new BackgroundFill(Color.rgb(120,240,130), new CornerRadii(16), Insets.EMPTY));
+
+        button.setBackground(base);
+        button.setTextFill(Color.WHITE);
+        button.setFont(Font.font("Verdana",32));
+
+        button.setOnMouseEntered(e -> button.setBackground(hover));
+        button.setOnMouseExited(e -> button.setBackground(base));
+        button.setOnMousePressed(e -> button.setBackground(click));
+        button.setOnMouseReleased(e -> button.setBackground(base));
+    }
+
+    public void start(Stage stage) {
+        this.stage = stage;
+        this.boardScene = getBoardScene();
+        this.mainMenuScene = getMainMenuScene();
+
+        // Create the main menu scene
+
+
+        // Initially show the main menu
+        stage.setScene(mainMenuScene);
+        stage.setTitle("parathello");
         stage.show();
     }
 }

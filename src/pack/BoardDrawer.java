@@ -1,6 +1,6 @@
 // NOTE: If you are reading this in the repo, this may not compile yet, as certain JavaFX modules must be set in the project first
 // the package statement below is just an artifact of whatever hacky intellij environment I set up just to get this to compile. we still don't have one set up for this project specifically
-package org.example.othelloparallelism2real2cool;
+package pack;
 
 // no wildcard imports :[
 import javafx.application.Application;
@@ -16,8 +16,10 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.*;
 import javafx.stage.Stage;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.awt.Point;
+import java.util.Set;
 
 
 public class BoardDrawer extends Application {
@@ -31,17 +33,8 @@ public class BoardDrawer extends Application {
     public static int windowLength = boardSize * cellSize;
 
     public static Color BOARD_COLOR = Color.rgb(0, 159, 3);
-    public static int[][] board =
-            {
-                    {1, 1, 1, 1, 1, 1, 1, 1},
-                    {0, 0, 0, 0, 0, 0, 0, 0},
-                    {0, 0, 0, 0, 0, 0, 0, 0},
-                    {0, 0, 0, 1, 2, 0, 0, 0},
-                    {0, 0, 0, 2, 1, 0, 0, 0},
-                    {0, 0, 0, 0, 0, 0, 0, 0},
-                    {0, 0, 0, 0, 0, 0, 0, 0},
-                    {0, 0, 0, 0, 0, 0, 0, 0}
-            };
+    static Board bored = new Board(8);
+    public static int[][] board = bored.boardState;
 
     // Create the scene for the board
     public Scene getBoardScene() {
@@ -58,49 +51,13 @@ public class BoardDrawer extends Application {
         double diskRadius = cellSize * 0.8 / 2.0;
 
         // Draw actual board
-        for (int r = 0; r < boardSize; r++) {
-            for (int c = 0; c < boardSize; c++) {
-                // Swap the r and c to reflect board across main diagonal
-                double xPos = c * cellSize;
-                double yPos = r * cellSize;
-
-                // Draw green square
-                Rectangle cell = new Rectangle(xPos, yPos, cellSize, cellSize);
-                cell.setFill(BOARD_COLOR);
-                cell.setStroke(Color.BLACK);
-                cell.setStrokeWidth(cellSize / 20.0);
-                root.getChildren().add(cell);
-
-                // Draw disks; Must add half of cell length since circles draw from center
-                double xPosDisk = xPos + cellSize / 2.0;
-                double yPosDisk = yPos + cellSize / 2.0;
-                Color diskColor = Color.TRANSPARENT;
-
-                // If the cell has a 1 or 2, draw white or black disk; else, it will stay transparent
-                switch(board[r][c]) {
-                    case 1:
-                        diskColor = Color.WHITE;
-                        if (DEBUG) System.out.println("Placed white disk at " + xPosDisk + "," + yPosDisk);
-                        break;
-                    case 2:
-                        diskColor = Color.BLACK;
-                        if (DEBUG) System.out.println("Placed black disk at " + xPosDisk + "," + yPosDisk);
-                        break;
-                }
-
-                Circle disk = new Circle(xPosDisk, yPosDisk, diskRadius);
-                disk.setFill(diskColor);
-                root.getChildren().add(disk);
-            }
-        }
+        initBoard(root, diskRadius);
 
         // test various possible moves
-        // TODO: write function to grab these from Board.java
-        HashSet<Point> nextMoves = new HashSet<Point>();
-        nextMoves.add(new Point(2,3));
-        nextMoves.add(new Point(3,2));
-        nextMoves.add(new Point(4,5));
-        nextMoves.add(new Point(5,4));
+        // TODO: write function to grab these from pack.Board.java
+        Set<Point> nextMoves = new HashSet<>();
+        nextMoves.addAll(bored.getValidMoves());
+
 
         // Colors for the possible move ring whether moused over or not
         Color RING_GRAY = Color.rgb(0,0,0,0.2);
@@ -135,8 +92,9 @@ public class BoardDrawer extends Application {
             root.getChildren().add(lightLayer);
         }
 
+
         // mouse click test
-        // TODO: Send cell coords back to Board.java when clicked
+        // TODO: Send cell coords back to pack.Board.java when clicked
         root.setOnMouseClicked(event -> {
             double mouseX = event.getSceneX();
             double mouseY = event.getSceneY();
@@ -145,15 +103,93 @@ public class BoardDrawer extends Application {
             // Convert raw pixel coords to cell row and col
             int colClicked = (int)(mouseX / cellSize);
             int rowClicked = (int)(mouseY / cellSize);
+            Point clicked = new Point(rowClicked, colClicked);
             if (DEBUG) System.out.println("Cell clicked: " + rowClicked + ", " + colClicked);
-            if (DEBUG && nextMoves.contains(new Point(colClicked, rowClicked))) System.out.println("valid spot!");
+            if (DEBUG && nextMoves.contains(clicked)){
+                System.out.println("valid spot!");
+                bored.makeMove(clicked);
+
+                root.getChildren().clear();
+                root.getChildren().add(boardBorder);
+
+                initBoard(root, diskRadius);
+
+                nextMoves.clear();
+                nextMoves.addAll(bored.getValidMoves());
+
+                for (Point p : nextMoves) {
+                    // Dark circle base
+
+                    Circle darkLayer = new Circle(p.getY() * cellSize + cellSize/2.0, p.getX() * cellSize + cellSize/2.0, cellSize*0.8/2);
+                    darkLayer.setFill(RING_GRAY);
+
+                    // Circle that forms the "hole"
+                    Circle lightLayer = new Circle(p.getY() * cellSize + cellSize/2.0, p.getX() * cellSize + cellSize/2.0, cellSize*0.6/2);
+                    lightLayer.setFill(BOARD_COLOR);
+
+                    // Darken circle when moused over
+                    darkLayer.setOnMouseEntered(event2 -> {
+                        darkLayer.setFill(RING_GRAY_MOUSED);
+                        event2.consume();
+                    });
+                    // Darkens ring even when mouse is inside ring
+                    lightLayer.setOnMouseEntered(event2 -> {
+                        darkLayer.setFill(RING_GRAY_MOUSED);
+                        event2.consume();
+                    });
+                    // Lighten when mouse exits ring
+                    darkLayer.setOnMouseExited(event2 -> {
+                        darkLayer.setFill(RING_GRAY);
+                    });
+                    root.getChildren().add(darkLayer);
+                    root.getChildren().add(lightLayer);
+                }
+            }
         });
 
         // Draw window containing the group with all our cool graphics
         Scene scene = new Scene(root, 8 * cellSize, 8 * cellSize);
         scene.setFill(Color.rgb(220,220,220));
+
         return scene;
     }
+
+    private void initBoard(Group root, double diskRadius) {
+        for (int r = 0; r < boardSize; r++) {
+            for (int c = 0; c < boardSize; c++) {
+                double xPos = c * cellSize;
+                double yPos = r * cellSize;
+
+                //redrawing green cells
+                Rectangle cell = new Rectangle(xPos, yPos, cellSize, cellSize);
+                cell.setFill(BOARD_COLOR);
+                cell.setStroke(Color.BLACK);
+                cell.setStrokeWidth(cellSize / 20.0);
+                root.getChildren().add(cell);
+
+                // Draw disks; Must add half of cell length since circles draw from center
+                double xPosDisk = xPos + cellSize / 2.0;
+                double yPosDisk = yPos + cellSize / 2.0;
+                Color diskColor = Color.TRANSPARENT;
+
+                switch(board[r][c]) {
+                    case 1:
+                        diskColor = Color.WHITE;
+                        if (DEBUG) System.out.println("Placed white disk at " + xPosDisk + "," + yPosDisk);
+                        break;
+                    case 2:
+                        diskColor = Color.BLACK;
+                        if (DEBUG) System.out.println("Placed black disk at " + xPosDisk + "," + yPosDisk);
+                        break;
+                }
+
+                Circle disk = new Circle(xPosDisk, yPosDisk, diskRadius);
+                disk.setFill(diskColor);
+                root.getChildren().add(disk);
+            }
+        }
+    }
+
 
     // Draws the main menu scene containing all the buttons on startup.
     public Scene getMainMenuScene() {

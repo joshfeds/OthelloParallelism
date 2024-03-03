@@ -1,3 +1,5 @@
+package pack;
+
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
@@ -7,7 +9,7 @@ import java.awt.Point;
 public class Board {
     public final boolean DEBUGGING = true;
     private int boardSize;
-    private int[][] boardState;
+    public int[][] boardState;
     private int currentPlayer = 1;
 
     public final int BOTPLAYER = 2;
@@ -144,6 +146,7 @@ public class Board {
 
         // Toggle the current player and reset valid moves mapping.
         this.currentPlayer = this.currentPlayer == 1 ? 2 : 1;
+
         updateValidMoves();
     }
 

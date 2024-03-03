@@ -1,5 +1,6 @@
+package pack;
+
 import java.util.List;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.ArrayList;
@@ -38,9 +39,9 @@ public class MiniMax {
             HashSet<Integer> dirs = board.getDirections(pt);
             Node node = new Node(state, pt, board.getCurrentPlayer(), isMax);
             if (DEBUGGING) {
-                System.out.println("Node " + node);
+                System.out.println("pack.Node " + node);
                 System.out.println("Directions: " + board.getDirections(pt));
-                System.out.println("Board state:");
+                System.out.println("pack.Board state:");
                 node.printState();
                 System.out.println("-");
             }

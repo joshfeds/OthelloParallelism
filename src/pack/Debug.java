@@ -4,10 +4,13 @@ import java.awt.Point;
 
 // Class to hold debugging functions
 
+/*import java.awt.*;
+import java.util.HashSet;
+
 public class Debug {
 
     // Returns whether the proposed move is valid for the current board.
-    public boolean checkMoveValidity(Point mv, Board board, int xIncr, int yIncr) {
+    public boolean checkMoveValidity(Point mv, pack.Board board, int xIncr, int yIncr) {
         System.out.println("\nChecking " + mv + "'s validity:");
 
         int currentPlayer = board.getCurrentPlayer();
@@ -68,11 +71,12 @@ public class Debug {
     }
 
     // Prints the board state with val in the specified spot (for seeing where a move is easily).
-    public void tempSetBoardState(int x, int y, int val, Board board) {
+    public void tempSetBoardState(int x, int y, int val, pack.Board board) {
         int [][] state = board.getBoardState();
         int prevVal = state[x][y];
         state[x][y] = val;
         board.printBoard();
         state[x][y] = prevVal;
     }
-}
+  }
+ */

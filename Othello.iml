@@ -7,5 +7,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="javafx-sdk-21.0" level="project" />
+    <orderEntry type="library" name="JavaFX" level="application" />
   </component>
 </module>

@@ -10,7 +10,7 @@ public class MiniMax {
     public final boolean DEBUGGING = true;
     private Board board;
     private int boardSize;
-    private ArrayList<Node> roots;
+    private ArrayList<Node2> roots;
 
     MiniMax(int boardSize) {
         // Initialize the ArrayList of root nodes.
@@ -23,9 +23,9 @@ public class MiniMax {
     }
 
     // Returns an arraylist of nodes representing the next possible moves for the current player.
-    public ArrayList<Node> createNodes(boolean isMax, int [][] state) {
+    public ArrayList<Node2> createNodes(boolean isMax, int [][] state) {
         if (DEBUGGING) System.out.println("Creating nodes:\n-");
-        ArrayList<Node> nodes = new ArrayList<>();
+        ArrayList<Node2> nodes = new ArrayList<>();
 
         // Each child represents one of the next possible valid moves.
         Set<Point> valMoves = board.getValidMoves();
@@ -37,7 +37,7 @@ public class MiniMax {
 
         valMoves.forEach(pt -> {
             HashSet<Integer> dirs = board.getDirections(pt);
-            Node node = new Node(state, pt, board.getCurrentPlayer(), isMax);
+            Node2 node = new Node2(state, pt, board.getCurrentPlayer(), isMax);
             if (DEBUGGING) {
                 System.out.println("pack.Node " + node);
                 System.out.println("Directions: " + board.getDirections(pt));
@@ -53,7 +53,7 @@ public class MiniMax {
     }
 
     // From the parent, adds a leaf for each possible move.
-    public void createLeaves(Node parent) {
+    public void createLeaves(Node2 parent) {
         if (DEBUGGING) System.out.println("Leaves sprouting for " + parent);
 
         // Set the board to the parent's state and make the parent's move.
@@ -81,10 +81,10 @@ public class MiniMax {
 
         // Children are the opposite of their parent.
         boolean isChildMax = !parent.getIsMax();
-        ArrayList<Node> children = createNodes(isChildMax, childrenState);
+        ArrayList<Node2> children = createNodes(isChildMax, childrenState);
         parent.setChildren(children);
         if (children != null) {
-            for (Node child : children) {
+            for (Node2 child : children) {
                 createLeaves(child);
             }
         }
@@ -92,7 +92,7 @@ public class MiniMax {
 
     public void makeTree() {
         if (this.roots != null) {
-            for (Node root : roots) {
+            for (Node2 root : roots) {
                 if (DEBUGGING) System.out.println("Tree sprouting for " + root + "\n");
                 createLeaves(root);
             }
@@ -106,7 +106,7 @@ class Node {
     private int player;
     private boolean isMaxPlayer;
     private int score;
-    private List<Node> children;
+    private List<Node2> children;
 
     // Constructor.
     Node(int [][] state, Point move, int player, boolean isMax) {
@@ -136,7 +136,7 @@ class Node {
         return this.isMaxPlayer;
     }
 
-    public void setChildren(ArrayList<Node> children) {
+    public void setChildren(ArrayList<Node2> children) {
         this.children = children;
     }
 

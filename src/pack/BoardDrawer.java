@@ -1,5 +1,4 @@
 // NOTE: If you are reading this in the repo, this may not compile yet, as certain JavaFX modules must be set in the project first
-// the package statement below is just an artifact of whatever hacky intellij environment I set up just to get this to compile. we still don't have one set up for this project specifically
 package pack;
 
 // no wildcard imports :[
@@ -53,15 +52,13 @@ public class BoardDrawer extends Application {
         // Draw actual board
         initBoard(root, diskRadius);
 
-        // test various possible moves
-        // TODO: write function to grab these from pack.Board.java
+        // Get possible moves for this turn
         Set<Point> nextMoves = new HashSet<>();
         nextMoves.addAll(bored.getValidMoves());
 
-
         // Colors for the possible move ring whether moused over or not
         Color RING_GRAY = Color.rgb(0,0,0,0.2);
-        Color RING_GRAY_MOUSED = Color.rgb(0,0,0,0.5);
+        Color RING_GRAY_HOVERED = Color.rgb(0,0,0,0.5);
 
         // Draw rings to indicate possible moves
         for (Point p : nextMoves) {
@@ -75,12 +72,12 @@ public class BoardDrawer extends Application {
 
             // Darken circle when moused over
             darkLayer.setOnMouseEntered(event -> {
-                darkLayer.setFill(RING_GRAY_MOUSED);
+                darkLayer.setFill(RING_GRAY_HOVERED);
                 event.consume();
             });
             // Darkens ring even when mouse is inside ring
             lightLayer.setOnMouseEntered(event -> {
-                darkLayer.setFill(RING_GRAY_MOUSED);
+                darkLayer.setFill(RING_GRAY_HOVERED);
                 event.consume();
             });
             // Lighten when mouse exits ring
@@ -129,12 +126,12 @@ public class BoardDrawer extends Application {
 
                     // Darken circle when moused over
                     darkLayer.setOnMouseEntered(event2 -> {
-                        darkLayer.setFill(RING_GRAY_MOUSED);
+                        darkLayer.setFill(RING_GRAY_HOVERED);
                         event2.consume();
                     });
                     // Darkens ring even when mouse is inside ring
                     lightLayer.setOnMouseEntered(event2 -> {
-                        darkLayer.setFill(RING_GRAY_MOUSED);
+                        darkLayer.setFill(RING_GRAY_HOVERED);
                         event2.consume();
                     });
                     // Lighten when mouse exits ring
@@ -190,137 +187,30 @@ public class BoardDrawer extends Application {
         }
     }
 
-
-    // Draws the main menu scene containing all the buttons on startup.
-    public Scene getMainMenuScene() {
-        // BorderPane that holds all the objects below
-        BorderPane borderPane = new BorderPane();
-
-        // Green background that looks like the board
-        Rectangle boardBackground = new Rectangle(windowLength, windowLength);
-        boardBackground.setFill(BOARD_COLOR);
-        borderPane.getChildren().add(boardBackground);
-
-        // Brown border to frame the board
-        Rectangle boardBorder = new Rectangle(windowLength, windowLength);
-        boardBorder.setFill(Color.rgb(0,0,0,0));
-        boardBorder.setStroke(Color.rgb(70,30,30));
-        boardBorder.setStrokeWidth(cellSize / 5.0);
-        borderPane.getChildren().add(boardBorder);
-
-        // This holds all the buttons
-        StackPane menuLayout = new StackPane();
-
-        // Button time
-        Button playButton = new Button("Play");
-        Button aboutButton = new Button("About");
-        Button exitButton = new Button("Exit");
-
-        // Apply same style to all buttons
-        styleButton((playButton));
-        styleButton((aboutButton));
-        styleButton((exitButton));
-
-        // Tell buttons what to do
-        playButton.setOnAction(e -> stage.setScene(boardScene));
-        aboutButton.setOnAction(e -> stage.setScene(aboutScene));
-        exitButton.setOnAction(e -> System.exit(0));
-
-        // Draw and align buttons
-        menuLayout.getChildren().addAll(playButton, aboutButton, exitButton);
-        StackPane.setAlignment(playButton, Pos.TOP_CENTER);
-        StackPane.setAlignment(aboutButton, Pos.CENTER);
-        StackPane.setAlignment(exitButton, Pos.BOTTOM_CENTER);
-
-        // Center the button array in the scene
-        borderPane.setCenter(menuLayout);
-        borderPane.setPadding(new Insets((double) windowLength / 4));
-
-        // Title text
-        Text title = new Text("Parathello");
-        title.setFont(Font.font("Verdana", FontWeight.BOLD, FontPosture.ITALIC,48));
-        title.setStyle("-fx-fill: linear-gradient(to right, white, black); -fx-stroke: black; -fx-stroke-width: 1;");
-
-        // Center text at top of screen
-        HBox titleBox = new HBox(title);
-        titleBox.setAlignment(Pos.CENTER);
-        HBox.setMargin(title, new Insets(0, 0, 40, 0));
-        borderPane.setTop(titleBox);
-
-        return new Scene(borderPane, windowLength, windowLength);
-    }
-
-    // Styles the buttons on the main menu and about page.
-    public static void styleButton(Button button)
-    {
-        // Different background styles for a button by default, when mouse hovers over it, and when mouse clicks it.
-        Background base = new Background(new BackgroundFill(Color.rgb(76,175,80), new CornerRadii(16), Insets.EMPTY));
-        Background hover = new Background(new BackgroundFill(Color.rgb(120,210,130), new CornerRadii(16), Insets.EMPTY));
-        Background click = new Background(new BackgroundFill(Color.rgb(120,240,130), new CornerRadii(16), Insets.EMPTY));
-
-        button.setBackground(base);
-        button.setTextFill(Color.WHITE);
-        button.setFont(Font.font("Verdana",32));
-
-        // Events to track mouse activity on this button.
-        button.setOnMouseEntered(e -> button.setBackground(hover));
-        button.setOnMouseExited(e -> button.setBackground(base));
-        button.setOnMousePressed(e -> button.setBackground(click));
-        button.setOnMouseReleased(e -> button.setBackground(base));
-    }
-
-    // Draws the About scene with all our cool names
-    public Scene getAboutScene() {
-        // BorderPane to hold everything
-        BorderPane borderPane = new BorderPane();
-
-        // Green board-looking background like usual
-        Rectangle boardBackground = new Rectangle(windowLength, windowLength);
-        boardBackground.setFill(BOARD_COLOR);
-        borderPane.getChildren().add(boardBackground);
-
-        // Brown board border (say that 4 times fast)
-        Rectangle boardBorder = new Rectangle(windowLength, windowLength);
-        boardBorder.setFill(Color.rgb(0,0,0,0));
-        boardBorder.setStroke(Color.rgb(70,30,30));
-        boardBorder.setStrokeWidth(cellSize / 5.0);
-        borderPane.getChildren().add(boardBorder);
-
-        // oh wow that's us
-        Text credits = new Text("Created By:\nJarod Davies\nJoshua Federman\nAnna MacInnis\nNicholas Rolland");
-        credits.setFont(Font.font("Verdana", 32));
-        credits.setFill(Color.WHITE);
-        credits.setTextAlignment(TextAlignment.CENTER);
-        credits.setLineSpacing(20);
-
-        // Center credits text in scene
-        borderPane.setCenter(credits);
-        borderPane.setPadding(new Insets((double) windowLength / 4));
-
-        // Button to return to main menu
-        Button backButton = new Button("Back");
-        styleButton(backButton);
-        backButton.setOnAction(e -> stage.setScene(mainMenuScene));
-
-        // Need an extra control object to center the button in the bottom center
-        HBox bottomBox = new HBox(backButton);
-        bottomBox.setAlignment(Pos.CENTER);
-        borderPane.setBottom(bottomBox);
-
-        return new Scene(borderPane, windowLength, windowLength);
-    }
-
     public void start(Stage stage) {
         // Get all the scenes
         this.stage = stage;
         this.boardScene = getBoardScene();
-        this.mainMenuScene = getMainMenuScene();
-        this.aboutScene = getAboutScene();
+        this.mainMenuScene = MainMenu.getMainMenuScene(this.stage, this.boardScene, this.aboutScene);
+        this.aboutScene = MainMenu.getAboutScene(this.stage, this.mainMenuScene);
 
+        // This is kinda cursed. When the Main Menu scene is created, it has a button to the About scene,
+        // but it hasn't been created yet! So the button freezes the program.
+        // I just recreate the scene again, now that the About scene exists.
+        this.mainMenuScene = MainMenu.getMainMenuScene(this.stage, this.boardScene, this.aboutScene);
+
+        // Pick new random window title on each startup
+        String[] titles = {"Parathello: A pursuit in plundering every potential piece by probing possible paths in parallel",
+                           "Parathello: Parallel Othello",
+                           "Othello, but it's optimized in parallel",
+                           "this is nOT HELLO world, but something much more",
+                           "Finally, something that's not image processing or matrix multiplication!",
+                           "Another board game, but not Sudoku or Chess"};
+        String windowTitle = titles[(int)(Math.random() * titles.length)];
 
         // Initially show the main menu
         stage.setScene(mainMenuScene);
-        stage.setTitle("parathello");
+        stage.setTitle(windowTitle);
         stage.show();
     }
 }

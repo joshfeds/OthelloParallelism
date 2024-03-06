@@ -56,39 +56,7 @@ public class BoardDrawer extends Application {
         Set<Point> nextMoves = new HashSet<>();
         nextMoves.addAll(bored.getValidMoves());
 
-        // Colors for the possible move ring whether moused over or not
-        Color RING_GRAY = Color.rgb(0,0,0,0.2);
-        Color RING_GRAY_HOVERED = Color.rgb(0,0,0,0.5);
-
-        // Draw rings to indicate possible moves
-        for (Point p : nextMoves) {
-            // Dark circle base
-            Circle darkLayer = new Circle(p.getX() * cellSize + cellSize/2.0, p.getY() * cellSize + cellSize/2.0, cellSize*0.8/2);
-            darkLayer.setFill(RING_GRAY);
-
-            // Circle that forms the "hole"
-            Circle lightLayer = new Circle(p.getX() * cellSize + cellSize/2.0, p.getY() * cellSize + cellSize/2.0, cellSize*0.6/2);
-            lightLayer.setFill(BOARD_COLOR);
-
-            // Darken circle when moused over
-            darkLayer.setOnMouseEntered(event -> {
-                darkLayer.setFill(RING_GRAY_HOVERED);
-                event.consume();
-            });
-            // Darkens ring even when mouse is inside ring
-            lightLayer.setOnMouseEntered(event -> {
-                darkLayer.setFill(RING_GRAY_HOVERED);
-                event.consume();
-            });
-            // Lighten when mouse exits ring
-            darkLayer.setOnMouseExited(event -> {
-                darkLayer.setFill(RING_GRAY);
-            });
-
-            root.getChildren().add(darkLayer);
-            root.getChildren().add(lightLayer);
-        }
-
+        drawNextMoveRings(root, nextMoves);
 
         // mouse click test
         // TODO: Send cell coords back to pack.Board.java when clicked
@@ -113,34 +81,7 @@ public class BoardDrawer extends Application {
 
                 nextMoves.clear();
                 nextMoves.addAll(bored.getValidMoves());
-
-                for (Point p : nextMoves) {
-                    // Dark circle base
-
-                    Circle darkLayer = new Circle(p.getY() * cellSize + cellSize/2.0, p.getX() * cellSize + cellSize/2.0, cellSize*0.8/2);
-                    darkLayer.setFill(RING_GRAY);
-
-                    // Circle that forms the "hole"
-                    Circle lightLayer = new Circle(p.getY() * cellSize + cellSize/2.0, p.getX() * cellSize + cellSize/2.0, cellSize*0.6/2);
-                    lightLayer.setFill(BOARD_COLOR);
-
-                    // Darken circle when moused over
-                    darkLayer.setOnMouseEntered(event2 -> {
-                        darkLayer.setFill(RING_GRAY_HOVERED);
-                        event2.consume();
-                    });
-                    // Darkens ring even when mouse is inside ring
-                    lightLayer.setOnMouseEntered(event2 -> {
-                        darkLayer.setFill(RING_GRAY_HOVERED);
-                        event2.consume();
-                    });
-                    // Lighten when mouse exits ring
-                    darkLayer.setOnMouseExited(event2 -> {
-                        darkLayer.setFill(RING_GRAY);
-                    });
-                    root.getChildren().add(darkLayer);
-                    root.getChildren().add(lightLayer);
-                }
+                drawNextMoveRings(root, nextMoves);
             }
         });
 
@@ -184,6 +125,42 @@ public class BoardDrawer extends Application {
                 disk.setFill(diskColor);
                 root.getChildren().add(disk);
             }
+        }
+    }
+
+    // Draws the rings to indicate next possible moves.
+    private void drawNextMoveRings(Group root, Set<Point> nextMoves) {
+        // Colors for the possible move ring whether moused over or not
+        Color RING_GRAY = Color.rgb(0,0,0,0.2);
+        Color RING_GRAY_HOVERED = Color.rgb(0,0,0,0.5);
+
+        // Draw rings to indicate possible moves
+        for (Point p : nextMoves) {
+            // Dark circle base
+            Circle darkLayer = new Circle(p.getY() * cellSize + cellSize/2.0, p.getX() * cellSize + cellSize/2.0, cellSize*0.8/2);
+            darkLayer.setFill(RING_GRAY);
+
+            // Circle that forms the "hole"
+            Circle lightLayer = new Circle(p.getY() * cellSize + cellSize/2.0, p.getX() * cellSize + cellSize/2.0, cellSize*0.6/2);
+            lightLayer.setFill(BOARD_COLOR);
+
+            // Darken circle when moused over
+            darkLayer.setOnMouseEntered(event -> {
+                darkLayer.setFill(RING_GRAY_HOVERED);
+                event.consume();
+            });
+            // Darkens ring even when mouse is inside ring
+            lightLayer.setOnMouseEntered(event -> {
+                darkLayer.setFill(RING_GRAY_HOVERED);
+                event.consume();
+            });
+            // Lighten when mouse exits ring
+            darkLayer.setOnMouseExited(event -> {
+                darkLayer.setFill(RING_GRAY);
+            });
+
+            root.getChildren().add(darkLayer);
+            root.getChildren().add(lightLayer);
         }
     }
 

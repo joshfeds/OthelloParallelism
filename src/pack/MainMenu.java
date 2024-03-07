@@ -17,7 +17,8 @@ public class MainMenu {
     public static boolean DEBUG = true;
     public static int boardSize = 8;
     public static int cellSize = 100;
-    public static int windowLength = boardSize * cellSize;
+    public static double windowWidth = 1.5 * boardSize * cellSize;
+    public static double windowHeight = 1.01 * boardSize * cellSize;
 
     public static Color BOARD_COLOR = Color.rgb(0, 159, 3);
     // Draws the main menu scene containing all the buttons on startup.
@@ -26,12 +27,12 @@ public class MainMenu {
         BorderPane borderPane = new BorderPane();
 
         // Green background that looks like the board
-        Rectangle boardBackground = new Rectangle(windowLength, windowLength);
+        Rectangle boardBackground = new Rectangle(windowWidth, windowHeight);
         boardBackground.setFill(BOARD_COLOR);
         borderPane.getChildren().add(boardBackground);
 
         // Brown border to frame the board
-        Rectangle boardBorder = new Rectangle(windowLength, windowLength);
+        Rectangle boardBorder = new Rectangle(windowWidth, windowHeight);
         boardBorder.setFill(Color.rgb(0,0,0,0));
         boardBorder.setStroke(Color.rgb(70,30,30));
         boardBorder.setStrokeWidth(cellSize / 5.0);
@@ -63,7 +64,7 @@ public class MainMenu {
 
         // Center the button array in the scene
         borderPane.setCenter(menuLayout);
-        borderPane.setPadding(new Insets((double) windowLength / 4));
+        borderPane.setPadding(new Insets((double) windowHeight / 4));
 
         // Title text
         Text title = new Text("Parathello");
@@ -76,7 +77,7 @@ public class MainMenu {
         HBox.setMargin(title, new Insets(0, 0, 40, 0));
         borderPane.setTop(titleBox);
 
-        return new Scene(borderPane, windowLength, windowLength);
+        return new Scene(borderPane, windowWidth, windowHeight);
     }
 
     // Draws the About scene with all our cool names
@@ -85,12 +86,12 @@ public class MainMenu {
         BorderPane borderPane = new BorderPane();
 
         // Green board-looking background like usual
-        Rectangle boardBackground = new Rectangle(windowLength, windowLength);
+        Rectangle boardBackground = new Rectangle(windowWidth, windowHeight);
         boardBackground.setFill(BOARD_COLOR);
         borderPane.getChildren().add(boardBackground);
 
         // Brown board border (say that 4 times fast)
-        Rectangle boardBorder = new Rectangle(windowLength, windowLength);
+        Rectangle boardBorder = new Rectangle(windowWidth, windowHeight);
         boardBorder.setFill(Color.rgb(0,0,0,0));
         boardBorder.setStroke(Color.rgb(70,30,30));
         boardBorder.setStrokeWidth(cellSize / 5.0);
@@ -105,7 +106,7 @@ public class MainMenu {
 
         // Center credits text in scene
         borderPane.setCenter(credits);
-        borderPane.setPadding(new Insets((double) windowLength / 4));
+        borderPane.setPadding(new Insets((double) windowHeight / 4));
 
         // Button to return to main menu
         Button backButton = new Button("Back");
@@ -117,7 +118,7 @@ public class MainMenu {
         bottomBox.setAlignment(Pos.CENTER);
         borderPane.setBottom(bottomBox);
 
-        return new Scene(borderPane, windowLength, windowLength);
+        return new Scene(borderPane, windowWidth, windowHeight);
     }
 
     // Styles the buttons on the main menu and about page.

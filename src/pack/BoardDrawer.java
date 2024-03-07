@@ -15,10 +15,8 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.*;
 import javafx.stage.Stage;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
 import java.awt.Point;
-import java.util.Set;
 
 
 public class BoardDrawer extends Application {
@@ -39,6 +37,7 @@ public class BoardDrawer extends Application {
     public Scene getBoardScene() {
         // All shapes must be added to this Group to be drawn
         Group root = new Group();
+        MiniJosh gameTree = new MiniJosh(8);
 
         // Draw border of board
         Rectangle boardBorder = new Rectangle(windowLength, windowLength);
@@ -54,7 +53,10 @@ public class BoardDrawer extends Application {
 
         // Get possible moves for this turn
         Set<Point> nextMoves = new HashSet<>();
-        nextMoves.addAll(bored.getValidMoves());
+        for (Point temp : bored.getValidMoves()) {
+            nextMoves.add(new Point(temp.x, temp.y));
+        }
+
 
         drawNextMoveRings(root, nextMoves);
 
@@ -69,10 +71,39 @@ public class BoardDrawer extends Application {
             int colClicked = (int)(mouseX / cellSize);
             int rowClicked = (int)(mouseY / cellSize);
             Point clicked = new Point(rowClicked, colClicked);
+            int randVal = 0;
             if (DEBUG) System.out.println("Cell clicked: " + rowClicked + ", " + colClicked);
             if (DEBUG && nextMoves.contains(clicked)){
-                System.out.println("valid spot!");
                 bored.makeMove(clicked);
+                gameTree.board = bored;
+
+                for(int i = 0; i < gameTree.roots.size(); i++){
+                    //System.out.println("Clicked: " + clicked);
+                    //System.out.println("Point in root: " + gameTree.roots.get(i).getMove());
+                    if(clicked.equals(gameTree.roots.get(i).getMove())){
+                        System.out.println("We have found our move within the roots.\n");
+
+                        //gameTree.createLeaves(gameTree.roots.get(i));
+                        //bored.printBoard();
+                        //flag = !flag;
+                        System.out.println("These are the previous roots: " + gameTree.roots);
+                        //System.out.println("gametree board");
+                        //gameTree.board.printBoard();
+
+                        gameTree.roots = gameTree.createNodes(true, bored.getBoardState());
+
+                        gameTree.board.printBoard();
+                        System.out.println("These are the new roots: " + gameTree.roots);
+                        int max = gameTree.roots.size();
+                        int min = 0;
+                        Random random = new Random();
+                        randVal = random.nextInt(max - min) + min;
+
+                        System.out.println("Rand point: " + gameTree.roots.get(randVal).getMove());
+                        break;
+                    }
+
+                }
 
                 root.getChildren().clear();
                 root.getChildren().add(boardBorder);
@@ -80,8 +111,63 @@ public class BoardDrawer extends Application {
                 initBoard(root, diskRadius);
 
                 nextMoves.clear();
-                nextMoves.addAll(bored.getValidMoves());
+                for (Point temp : bored.getValidMoves()) {
+
+                    nextMoves.add(new Point(temp.x, temp.y));
+                }
+
                 drawNextMoveRings(root, nextMoves);
+
+                clicked = gameTree.roots.get(randVal).getMove();
+
+
+                if (DEBUG && nextMoves.contains(clicked)) {
+
+
+
+                    bored.makeMove(clicked);
+                    gameTree.board = bored;
+
+                    for(int i = 0; i < gameTree.roots.size(); i++){
+
+                        if(clicked.equals(gameTree.roots.get(i).getMove())){
+                            System.out.println("We have found our move within the roots.\n");
+
+                            System.out.println("These are the previous roots: " + gameTree.roots);
+
+                            gameTree.roots = gameTree.createNodes(true, bored.getBoardState());
+
+                            gameTree.board.printBoard();
+                            System.out.println("These are the new roots: " + gameTree.roots);
+                            int max = gameTree.roots.size();
+                            int min = 0;
+                            Random random = new Random();
+                            randVal = random.nextInt(max - min) + min;
+
+                            System.out.println("Rand point: " + gameTree.roots.get(randVal).getMove());
+                            break;
+                        }
+
+                    }
+
+
+                    root.getChildren().clear();
+                    root.getChildren().add(boardBorder);
+
+                    initBoard(root, diskRadius);
+
+                    nextMoves.clear();
+                    System.out.println("Valid moves from bored.getValidMoves: " + bored.getValidMoves());
+
+                    for(Iterator<Point> it = bored.getValidMoves().iterator(); it.hasNext();){
+
+                        Point temp = it.next();
+                        nextMoves.add(new Point(temp.x, temp.y));
+                    }
+
+                    drawNextMoveRings(root, nextMoves);
+                }
+
             }
         });
 

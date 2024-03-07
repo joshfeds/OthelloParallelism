@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ToolBar;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -27,9 +28,11 @@ public class BoardDrawer extends Application {
     public static boolean DEBUG = true;
     public static int boardSize = 8;
     public static int cellSize = 100;
-    public static int windowLength = boardSize * cellSize;
+    public static double windowLength = 1.5 * boardSize * cellSize;
+    public static double windowHeight = 1.05 * boardSize * cellSize;
     public static double diskRadius = cellSize * 0.8 / 2.0;
     public static Color BOARD_COLOR = Color.rgb(0, 159, 3);
+    public static Color FRAME_COLOR = Color.rgb(72, 35,35);
     static Board bored = new Board(8);
     public static int[][] board = bored.boardState;
 
@@ -40,7 +43,7 @@ public class BoardDrawer extends Application {
         MiniJosh gameTree = new MiniJosh(8);
 
         // Draw border of board
-        Rectangle boardBorder = new Rectangle(windowLength, windowLength);
+        Rectangle boardBorder = new Rectangle(8 * cellSize, 8 * cellSize);
         boardBorder.setFill(Color.rgb(0,0,0,0));
         boardBorder.setStroke(Color.rgb(0,0,0));
         boardBorder.setStrokeWidth(cellSize / 10.0);
@@ -61,13 +64,75 @@ public class BoardDrawer extends Application {
         // Make scene responsive to clicks
         getPlayerInput(root, gameTree, nextMoves);
 
+
+        // Now, to actually put stuff around the board!
+        // This BorderPane places the board in the center, with panels to the left and right.
+        BorderPane borderPane = new BorderPane();
+        Background boardBackground = new Background(new BackgroundFill(FRAME_COLOR, null, null));
+        borderPane.setBackground(boardBackground);
+        borderPane.setCenter(root);
+
+
+        int humanPieces = 23;
+        int botPieces = 17;
+
+        String humanName = "You";
+        String botName = "Mr. Othello";
+
+        // Left panel with human player's score.
+        VBox leftPanel = new VBox();
+        leftPanel.setPadding(new Insets(cellSize / 8.0));
+        leftPanel.setAlignment(Pos.CENTER);
+
+        Text humanNameText = new Text(humanName);
+        humanNameText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+        humanNameText.setFill(Color.WHITE);
+
+        Text humanPiecesText = new Text(Integer.toString(humanPieces));
+        humanPiecesText.setFont(Font.font("Verdana", FontWeight.BOLD, 48));
+        humanPiecesText.setFill(Color.WHITE);
+
+        leftPanel.getChildren().addAll(humanNameText, humanPiecesText);
+
+        // Button that goes back to main menu.
+        Button backButton = new Button("Back");
+        MainMenu.styleButton(backButton);
+        VBox.setMargin(backButton, new Insets(windowHeight / 2.0,0,0,0));
+        backButton.setOnAction(e -> stage.setScene(mainMenuScene));
+
+        leftPanel.getChildren().add(backButton);
+
+        // Right panel with bot's score.
+        VBox rightPanel = new VBox();
+        rightPanel.setPadding(new Insets(cellSize / 8.0));
+        rightPanel.setAlignment(Pos.CENTER);
+
+        Text botNameText = new Text(botName);
+        botNameText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+        botNameText.setFill(Color.WHITE);
+
+        Text botPiecesText = new Text(Integer.toString(botPieces));
+        botPiecesText.setFont(Font.font("Verdana", FontWeight.BOLD, 48));
+        botPiecesText.setFill(Color.WHITE);
+
+        rightPanel.getChildren().addAll(botNameText, botPiecesText);
+
+        // Add left and right panels.
+        borderPane.setLeft(leftPanel);
+        borderPane.setRight(rightPanel);
+
+
+
+
+
         // Draw window containing the group with all our cool graphics
-        Scene scene = new Scene(root, 8 * cellSize, 8 * cellSize);
-        scene.setFill(Color.rgb(220,220,220));
+        Scene scene = new Scene(borderPane, windowLength, windowHeight);
+        scene.setFill(Color.rgb(72, 35,35));
 
         return scene;
     }
 
+    // TODO: Fix mouse input since coords are thrown off by changed window size
     public void getPlayerInput(Group root, MiniJosh gameTree, Set<Point> nextMoves) {
         // mouse click test
         // TODO: Send cell coords back to pack.Board.java when clicked
@@ -264,18 +329,23 @@ public class BoardDrawer extends Application {
         this.mainMenuScene = MainMenu.getMainMenuScene(this.stage, this.boardScene, this.aboutScene);
         this.aboutScene = MainMenu.getAboutScene(this.stage, this.mainMenuScene);
 
-        // This is kinda cursed. When the Main Menu scene is created, it has a button to the About scene,
-        // but it hasn't been created yet! So the button freezes the program.
-        // I just recreate the scene again, now that the About scene exists.
+        // This is kinda cursed. When some scenes are created, they have buttons to other scenes,
+        // but they haven't been created yet! So the button freezes the program.
+        // I just recreate the scene again, now that the button's target scene exists.
         this.mainMenuScene = MainMenu.getMainMenuScene(this.stage, this.boardScene, this.aboutScene);
+
+        // The most important scene
 
         // Pick new random window title on each startup
         String[] titles = {"Parathello: A pursuit in plundering every potential piece by probing possible paths in parallel",
                            "Parathello: Parallel Othello",
-                           "Othello, but it's optimized in parallel",
+                           "Parathello: Othello, but it's optimized in parallel",
+                           "Parathello: You may have a big brain, but your opponent has a dozen",
+                           "Parathello: You are playing against 8 threads in a trenchcoat",
                            "this is nOT HELLO world, but something much more",
-                           "Finally, something that's not image processing or matrix multiplication!",
-                           "Another board game, but not Sudoku or Chess"};
+                           "Parathello: Finally, something that's not image processing or matrix multiplication!",
+                           "Parathello: Another board game, but not Sudoku or Chess!",
+                           "Fun fact: these random titles were inspired by Terraria. oh btw this game is called Parathello"};
         String windowTitle = titles[(int)(Math.random() * titles.length)];
 
         // Initially show the main menu

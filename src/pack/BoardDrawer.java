@@ -28,7 +28,7 @@ public class BoardDrawer extends Application {
     public static int boardSize = 8;
     public static int cellSize = 100;
     public static int windowLength = boardSize * cellSize;
-
+    public static double diskRadius = cellSize * 0.8 / 2.0;
     public static Color BOARD_COLOR = Color.rgb(0, 159, 3);
     static Board bored = new Board(8);
     public static int[][] board = bored.boardState;
@@ -46,8 +46,6 @@ public class BoardDrawer extends Application {
         boardBorder.setStrokeWidth(cellSize / 10.0);
         root.getChildren().add(boardBorder);
 
-        double diskRadius = cellSize * 0.8 / 2.0;
-
         // Draw actual board
         initBoard(root, diskRadius);
 
@@ -57,9 +55,20 @@ public class BoardDrawer extends Application {
             nextMoves.add(new Point(temp.x, temp.y));
         }
 
-
+        // Draw rings to indicate where player can click to place next disk
         drawNextMoveRings(root, nextMoves);
 
+        // Make scene responsive to clicks
+        getPlayerInput(root, gameTree, nextMoves);
+
+        // Draw window containing the group with all our cool graphics
+        Scene scene = new Scene(root, 8 * cellSize, 8 * cellSize);
+        scene.setFill(Color.rgb(220,220,220));
+
+        return scene;
+    }
+
+    public void getPlayerInput(Group root, MiniJosh gameTree, Set<Point> nextMoves) {
         // mouse click test
         // TODO: Send cell coords back to pack.Board.java when clicked
         root.setOnMouseClicked(event -> {
@@ -73,7 +82,8 @@ public class BoardDrawer extends Application {
             Point clicked = new Point(rowClicked, colClicked);
             int randVal = 0;
             if (DEBUG) System.out.println("Cell clicked: " + rowClicked + ", " + colClicked);
-            if (DEBUG && nextMoves.contains(clicked)){
+
+            if (nextMoves.contains(clicked)){
                 bored.makeMove(clicked);
                 gameTree.board = bored;
 
@@ -81,29 +91,36 @@ public class BoardDrawer extends Application {
                     //System.out.println("Clicked: " + clicked);
                     //System.out.println("Point in root: " + gameTree.roots.get(i).getMove());
                     if(clicked.equals(gameTree.roots.get(i).getMove())){
-                        System.out.println("We have found our move within the roots.\n");
+                        if (DEBUG) System.out.println("We have found our move within the roots.\n");
 
                         //gameTree.createLeaves(gameTree.roots.get(i));
                         //bored.printBoard();
                         //flag = !flag;
-                        System.out.println("These are the previous roots: " + gameTree.roots);
+                        if (DEBUG) System.out.println("These are the previous roots: " + gameTree.roots);
                         //System.out.println("gametree board");
                         //gameTree.board.printBoard();
 
                         gameTree.roots = gameTree.createNodes(true, bored.getBoardState());
 
                         gameTree.board.printBoard();
-                        System.out.println("These are the new roots: " + gameTree.roots);
+                        if (DEBUG) System.out.println("These are the new roots: " + gameTree.roots);
                         int max = gameTree.roots.size();
                         int min = 0;
                         Random random = new Random();
                         randVal = random.nextInt(max - min) + min;
 
-                        System.out.println("Rand point: " + gameTree.roots.get(randVal).getMove());
+                        if (DEBUG) System.out.println("Rand point: " + gameTree.roots.get(randVal).getMove());
                         break;
                     }
 
                 }
+
+                // Border code from earlier
+                Rectangle boardBorder = new Rectangle(windowLength, windowLength);
+                boardBorder.setFill(Color.rgb(0,0,0,0));
+                boardBorder.setStroke(Color.rgb(0,0,0));
+                boardBorder.setStrokeWidth(cellSize / 10.0);
+
 
                 root.getChildren().clear();
                 root.getChildren().add(boardBorder);
@@ -122,29 +139,26 @@ public class BoardDrawer extends Application {
 
 
                 if (DEBUG && nextMoves.contains(clicked)) {
-
-
-
                     bored.makeMove(clicked);
                     gameTree.board = bored;
 
                     for(int i = 0; i < gameTree.roots.size(); i++){
 
                         if(clicked.equals(gameTree.roots.get(i).getMove())){
-                            System.out.println("We have found our move within the roots.\n");
+                            if (DEBUG) System.out.println("We have found our move within the roots.\n");
 
-                            System.out.println("These are the previous roots: " + gameTree.roots);
+                            if (DEBUG) System.out.println("These are the previous roots: " + gameTree.roots);
 
                             gameTree.roots = gameTree.createNodes(true, bored.getBoardState());
 
                             gameTree.board.printBoard();
-                            System.out.println("These are the new roots: " + gameTree.roots);
+                            if (DEBUG) System.out.println("These are the new roots: " + gameTree.roots);
                             int max = gameTree.roots.size();
                             int min = 0;
                             Random random = new Random();
                             randVal = random.nextInt(max - min) + min;
 
-                            System.out.println("Rand point: " + gameTree.roots.get(randVal).getMove());
+                            if (DEBUG) System.out.println("Rand point: " + gameTree.roots.get(randVal).getMove());
                             break;
                         }
 
@@ -157,7 +171,7 @@ public class BoardDrawer extends Application {
                     initBoard(root, diskRadius);
 
                     nextMoves.clear();
-                    System.out.println("Valid moves from bored.getValidMoves: " + bored.getValidMoves());
+                    if (DEBUG) System.out.println("Valid moves from bored.getValidMoves: " + bored.getValidMoves());
 
                     for(Iterator<Point> it = bored.getValidMoves().iterator(); it.hasNext();){
 
@@ -170,14 +184,7 @@ public class BoardDrawer extends Application {
 
             }
         });
-
-        // Draw window containing the group with all our cool graphics
-        Scene scene = new Scene(root, 8 * cellSize, 8 * cellSize);
-        scene.setFill(Color.rgb(220,220,220));
-
-        return scene;
     }
-
     private void initBoard(Group root, double diskRadius) {
         for (int r = 0; r < boardSize; r++) {
             for (int c = 0; c < boardSize; c++) {

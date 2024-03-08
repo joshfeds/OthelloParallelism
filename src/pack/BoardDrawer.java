@@ -8,14 +8,18 @@ import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ToolBar;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.*;
 import javafx.stage.Stage;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.awt.Point;
 
@@ -27,9 +31,10 @@ public class BoardDrawer extends Application {
     public Scene aboutScene;
     public static boolean DEBUG = true;
     public static int boardSize = 8;
+    // Note: this variable controls the size of almost everything
     public static int cellSize = 100;
-    public static double windowLength = 1.5 * boardSize * cellSize;
-    public static double windowHeight = 1.05 * boardSize * cellSize;
+    public static double windowWidth = 1.5 * boardSize * cellSize;
+    public static double windowHeight = 1.01 * boardSize * cellSize;
     public static double diskRadius = cellSize * 0.8 / 2.0;
     public static Color BOARD_COLOR = Color.rgb(0, 159, 3);
     public static Color FRAME_COLOR = Color.rgb(72, 35,35);
@@ -37,7 +42,7 @@ public class BoardDrawer extends Application {
     public static int[][] board = bored.boardState;
 
     // Create the scene for the board
-    public Scene getBoardScene() {
+    public Scene getBoardScene() throws IOException {
         // All shapes must be added to this Group to be drawn
         Group root = new Group();
         MiniJosh gameTree = new MiniJosh(8);
@@ -70,9 +75,12 @@ public class BoardDrawer extends Application {
         BorderPane borderPane = new BorderPane();
         Background boardBackground = new Background(new BackgroundFill(FRAME_COLOR, null, null));
         borderPane.setBackground(boardBackground);
+
+        // Place Othello board in the center, with 0 margins to ensure no excess space is taken.
         borderPane.setCenter(root);
+        BorderPane.setMargin(root, new Insets(0));
 
-
+        // Get scores and names for both players.
         int humanPieces = 23;
         int botPieces = 17;
 
@@ -82,7 +90,13 @@ public class BoardDrawer extends Application {
         // Left panel with human player's score.
         VBox leftPanel = new VBox();
         leftPanel.setPadding(new Insets(cellSize / 8.0));
-        leftPanel.setAlignment(Pos.CENTER);
+        leftPanel.setAlignment(Pos.TOP_CENTER);
+
+        // Constrain panel dimensions.
+        leftPanel.setMinHeight(windowHeight);
+        leftPanel.setMinWidth(windowWidth / 6.0);
+        leftPanel.setMaxHeight(windowHeight);
+        leftPanel.setMaxWidth(windowWidth / 6.0);
 
         Text humanNameText = new Text(humanName);
         humanNameText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
@@ -94,18 +108,26 @@ public class BoardDrawer extends Application {
 
         leftPanel.getChildren().addAll(humanNameText, humanPiecesText);
 
+        // TODO: Display player's image.
+        //ImageView playerImage = getImage("imgs/playerdefault.PNG");
+        //leftPanel.getChildren().addAll(playerImage);
+
         // Button that goes back to main menu.
         Button backButton = new Button("Back");
         MainMenu.styleButton(backButton);
-        VBox.setMargin(backButton, new Insets(windowHeight / 2.0,0,0,0));
         backButton.setOnAction(e -> stage.setScene(mainMenuScene));
 
         leftPanel.getChildren().add(backButton);
 
+
         // Right panel with bot's score.
         VBox rightPanel = new VBox();
         rightPanel.setPadding(new Insets(cellSize / 8.0));
-        rightPanel.setAlignment(Pos.CENTER);
+        rightPanel.setAlignment(Pos.TOP_CENTER);
+        rightPanel.setMinHeight(windowHeight);
+        rightPanel.setMinWidth(windowWidth / 6.0);
+        rightPanel.setMaxHeight(windowHeight);
+        rightPanel.setMaxWidth(windowWidth / 6.0);
 
         Text botNameText = new Text(botName);
         botNameText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
@@ -126,13 +148,24 @@ public class BoardDrawer extends Application {
 
 
         // Draw window containing the group with all our cool graphics
-        Scene scene = new Scene(borderPane, windowLength, windowHeight);
+        Scene scene = new Scene(borderPane, windowWidth, windowHeight);
         scene.setFill(Color.rgb(72, 35,35));
 
         return scene;
     }
 
-    // TODO: Fix mouse input since coords are thrown off by changed window size
+    private ImageView getImage(String filepath) throws IOException {
+        InputStream playerImageStream = new FileInputStream(filepath);
+        ImageView playerImageView = new ImageView();
+        Image playerImage = new Image(playerImageStream);
+        playerImageView.setImage(playerImage);
+
+        playerImageView.setFitWidth(1.5 * cellSize);
+        playerImageView.setFitHeight(1.5 * cellSize);
+        playerImageView.setPreserveRatio(true);
+
+        return playerImageView;
+    }
     public void getPlayerInput(Group root, MiniJosh gameTree, Set<Point> nextMoves) {
         // mouse click test
         // TODO: Send cell coords back to pack.Board.java when clicked
@@ -141,9 +174,12 @@ public class BoardDrawer extends Application {
             double mouseY = event.getSceneY();
             if (DEBUG) System.out.println("Mouse clicked at: (" + mouseX + ", " + mouseY + ")");
 
-            // Convert raw pixel coords to cell row and col
-            int colClicked = (int)(mouseX / cellSize);
-            int rowClicked = (int)(mouseY / cellSize);
+            // Determine offsets of board's top left corner.
+            double xOffset = windowWidth / 6.0 + cellSize / 10.0;
+            double yOffset = cellSize / 10.0;
+            // Convert raw pixel coords to cell row and col, accounting for offsets
+            int colClicked = (int)((mouseX - xOffset) / cellSize);
+            int rowClicked = (int)((mouseY - yOffset) / cellSize);
             Point clicked = new Point(rowClicked, colClicked);
             int randVal = 0;
             if (DEBUG) System.out.println("Cell clicked: " + rowClicked + ", " + colClicked);
@@ -181,7 +217,7 @@ public class BoardDrawer extends Application {
                 }
 
                 // Border code from earlier
-                Rectangle boardBorder = new Rectangle(windowLength, windowLength);
+                Rectangle boardBorder = new Rectangle(8 * cellSize, 8 * cellSize);
                 boardBorder.setFill(Color.rgb(0,0,0,0));
                 boardBorder.setStroke(Color.rgb(0,0,0));
                 boardBorder.setStrokeWidth(cellSize / 10.0);
@@ -322,7 +358,7 @@ public class BoardDrawer extends Application {
         }
     }
 
-    public void start(Stage stage) {
+    public void start(Stage stage) throws IOException{
         // Get all the scenes
         this.stage = stage;
         this.boardScene = getBoardScene();

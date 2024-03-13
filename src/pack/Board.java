@@ -193,6 +193,11 @@ public class Board {
         return this.validMoves.keySet();
     }
 
+    // Returns valid directions to travel when making the move.
+    public HashSet<Integer> getValidDirections(Point mv) {
+        return this.validMoves.get(mv);
+    }
+
     // Returns directions I neet to travel to make the move.
     public HashSet<Integer> getDirections(Point move) {
         return this.validMoves.get(move);

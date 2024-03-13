@@ -7,10 +7,11 @@ import java.util.ArrayList;
 import java.awt.Point;
 
 public class MiniMax {
-    public final boolean DEBUGGING = true;
+    public final boolean DEBUGGING = false;
+    public final boolean SCORE_DEBUGGING = true;
     private Board board;
     private int boardSize;
-    private ArrayList<Node2> roots;
+    private ArrayList<Node> roots;
 
     MiniMax(int boardSize) {
         // Initialize the ArrayList of root nodes.
@@ -23,9 +24,9 @@ public class MiniMax {
     }
 
     // Returns an arraylist of nodes representing the next possible moves for the current player.
-    public ArrayList<Node2> createNodes(boolean isMax, int [][] state) {
+    public ArrayList<Node> createNodes(boolean isMax, int [][] state) {
         if (DEBUGGING) System.out.println("Creating nodes:\n-");
-        ArrayList<Node2> nodes = new ArrayList<>();
+        ArrayList<Node> nodes = new ArrayList<>();
 
         // Each child represents one of the next possible valid moves.
         Set<Point> valMoves = board.getValidMoves();
@@ -37,7 +38,7 @@ public class MiniMax {
 
         valMoves.forEach(pt -> {
             HashSet<Integer> dirs = board.getDirections(pt);
-            Node2 node = new Node2(state, pt, board.getCurrentPlayer(), isMax);
+            Node node = new Node(state, pt, board.getCurrentPlayer(), isMax);
             if (DEBUGGING) {
                 System.out.println("pack.Node " + node);
                 System.out.println("Directions: " + board.getDirections(pt));
@@ -53,7 +54,7 @@ public class MiniMax {
     }
 
     // From the parent, adds a leaf for each possible move.
-    public void createLeaves(Node2 parent) {
+    public void createLeaves(Node parent) {
         if (DEBUGGING) System.out.println("Leaves sprouting for " + parent);
 
         // Set the board to the parent's state and make the parent's move.
@@ -81,21 +82,35 @@ public class MiniMax {
 
         // Children are the opposite of their parent.
         boolean isChildMax = !parent.getIsMax();
-        ArrayList<Node2> children = createNodes(isChildMax, childrenState);
+        ArrayList<Node> children = createNodes(isChildMax, childrenState);
         parent.setChildren(children);
         if (children != null) {
-            for (Node2 child : children) {
-                createLeaves(child);
+            for (Node child : children) {
+                // createLeaves(child);
+                calculateMoveScore(child);
             }
         }
     }
 
     public void makeTree() {
         if (this.roots != null) {
-            for (Node2 root : roots) {
+            for (Node root : roots) {
                 if (DEBUGGING) System.out.println("Tree sprouting for " + root + "\n");
                 createLeaves(root);
             }
+        }
+    }
+
+    // Assigns a score to the (leaf?) node.
+    private void calculateMoveScore(Node n) {
+        if (SCORE_DEBUGGING) 
+            System.out.println("Calculating score for " + n);
+        if (n.score != null) {
+            // Determine how many frontier vs interior locations will be obtained.
+            // Assuming the board currently represents this node's local stateBeforeMove.
+            HashSet<Integer> dirs = board.getValidDirections(n.getMove());
+            if (SCORE_DEBUGGING)
+                System.out.println(dirs);
         }
     }
 }
@@ -105,8 +120,8 @@ class Node {
     private Point move;
     private int player;
     private boolean isMaxPlayer;
-    private int score;
-    private List<Node2> children;
+    public Integer score;
+    private List<Node> children;
 
     // Constructor.
     Node(int [][] state, Point move, int player, boolean isMax) {
@@ -114,7 +129,7 @@ class Node {
         this.move = move;
         this.player = player;
         this.isMaxPlayer = isMax;
-        this.score = 0; // todo actually compute score
+        this.score = null; // Assign a value on calculation.
         this.children = new ArrayList<>();
     }
 
@@ -136,7 +151,7 @@ class Node {
         return this.isMaxPlayer;
     }
 
-    public void setChildren(ArrayList<Node2> children) {
+    public void setChildren(ArrayList<Node> children) {
         this.children = children;
     }
 

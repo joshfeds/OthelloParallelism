@@ -167,6 +167,65 @@ public class Board {
         }
     }
 
+    // Methods for score calculation:
+
+    // Count the amount of frontier and interior pieces that will be obtained by the current player.
+    // Increments for each interior and decrements for each frontier.
+    public int countFrontiersAndInteriors(Point mv) {
+        // todo Make that move then reverse it??
+        int result = 0;
+
+        // Check the current location of the move.
+        if (isInterior(mv.x, mv.y)) {
+            result++;
+            if (DEBUGGING) System.out.println("init spot is interior ++");
+        } else {
+            result--;
+            if (DEBUGGING) System.out.println("init spot is frontier --");
+        }
+
+        // Get the associated directions to travel.
+        HashSet<Integer> dirs = validMoves.get(mv);
+        for (Integer dir : dirs) {
+            if (DEBUGGING) System.out.println("NEW DIRECTION!!!");
+            int curX = mv.x + xOffsets[dir];
+            int curY = mv.y + yOffsets[dir];
+
+            while (boardState[curX][curY] != this.currentPlayer) {
+                if (DEBUGGING) 
+                    System.out.println("========\nCurrent spot is: " + curX + ", " + curY);
+
+                if (isInterior(curX, curY)) {
+                    result++;
+                    if (DEBUGGING) System.out.println("\tis interior ++");
+                } else {
+                    result--;
+                    if (DEBUGGING) System.out.println("\tis frontier --");
+                }
+
+                curX += xOffsets[dir];
+                curY += yOffsets[dir];
+            }
+        }
+
+        return result;
+    }
+
+    // Helper method for countFrontiersAndInteriors.
+    // Checks surrounding tiles for empty slots.
+    public boolean isInterior(int row, int col) {
+        boolean result = true;
+
+        for (int i = 0; i < xOffsets.length; i++) {
+            for (int j = 0; j < yOffsets.length; j++) {
+                if (boardState[i][j] == 0)
+                    result = false;
+            }
+        }
+
+        return result;
+    }
+
     // Getters and setters:
 
     public int getCurrentPlayer() {

@@ -105,12 +105,14 @@ public class MiniMax {
     private void calculateMoveScore(Node n) {
         if (SCORE_DEBUGGING) 
             System.out.println("Calculating score for " + n);
+
+        n.score = 0;
         if (n.score != null) {
-            // Determine how many frontier vs interior locations will be obtained.
-            // Assuming the board currently represents this node's local stateBeforeMove.
-            HashSet<Integer> dirs = board.getValidDirections(n.getMove());
+            // Adjust score based on amount of fronteir vs interior locations will be obtained.
+            n.score += board.countFrontiersAndInteriors(n.getMove());
+
             if (SCORE_DEBUGGING)
-                System.out.println(dirs);
+                System.out.println("Score after counting frontiers and interiors: " + n.score);
         }
     }
 }

@@ -23,7 +23,11 @@ public class Board {
     // Maps valid moves to directions to fill in for current player.
     private HashMap<Point, HashSet<Integer>> validMoves;
 
-    // Score increments (todo add constants)
+    // Score increments 
+    public final int INTERIOR_SCORE = 1;
+    public final int FRONTIER_SCORE = -1;
+    public final int CORNER_SCORE = 20;
+    public final int EDGE_SCORE = 10;
     
     public Board(int boardSize) {
         if (DEBUGGING) System.out.println("New board created.");
@@ -205,16 +209,16 @@ public class Board {
         int res = 0;
 
         if (isInterior(row, col)) {
-            res++;
+            res += INTERIOR_SCORE;
             if (DEBUGGING) System.out.println("\t(" + row + ", " + col +") is interior");
         }
         else {
-            res--;
+            res += FRONTIER_SCORE;
             if (DEBUGGING) System.out.println("\t(" + row + ", " + col +") is frontier");
         }
 
         if (isCorner(row, col)) {
-            res += 20;
+            res += CORNER_SCORE;
             if (DEBUGGING) System.out.println("\t(" + row + ", " + col +") is a corner");
         }
 
@@ -222,7 +226,7 @@ public class Board {
         //     res += bufferScore(row, col);
 
         // if (isEdge(row, col))
-        //     res += 10;
+        //     res += EDGE_SCORE;
 
         return res;
     }
@@ -250,13 +254,13 @@ public class Board {
     }
 
     // todo implement
-    // public boolean isBuffer() {}
+    // public boolean isBuffer(int row, int col) {}
 
     // todo implement
-    // public boolean isEdge() {}
+    // public boolean isEdge(int row, int col) {}
 
     // todo implement
-    // public int bufferScore() {}
+    // public int bufferScore(int row, int col) {}
 
     // Getters and setters:
 

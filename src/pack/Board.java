@@ -27,6 +27,8 @@ public class Board {
     public final int INTERIOR_SCORE = 1;
     public final int FRONTIER_SCORE = -1;
     public final int CORNER_SCORE = 20;
+    public final int GOOD_BUFFER_SCORE = 1;
+    public final int BAD_BUFFER_SCORE = -3;
     public final int EDGE_SCORE = 10;
     
     public Board(int boardSize) {
@@ -219,14 +221,14 @@ public class Board {
 
         if (isCorner(row, col)) {
             res += CORNER_SCORE;
-            if (DEBUGGING) System.out.println("\t(" + row + ", " + col +") is a corner");
+            if (DEBUGGING) System.out.println("\t(" + row + ", " + col + ") is a corner");
+        } else if (isBuffer(row, col)) {
+            res += bufferScore(row, col);
+            if (DEBUGGING) System.out.println("\t(" + row + ", " + col + ") is a buffer");
+        } else if (isEdge(row, col)) {
+            res += EDGE_SCORE;
+            if (DEBUGGING) System.out.println("\t(" + row + ", " + col +") is an edge");
         }
-
-        // if (isBuffer(row, col))
-        //     res += bufferScore(row, col);
-
-        // if (isEdge(row, col))
-        //     res += EDGE_SCORE;
 
         return res;
     }
@@ -245,22 +247,36 @@ public class Board {
         return result;
     }
 
-    // Is the location a corner tile?
-    public boolean isCorner(int row, int col) {
-        if ((row == 0 || row == boardSize - 1) && (col == 0 || col == boardSize - 1))
-            return true;
-        
-        return false;
+    public boolean isBoardEdge(int dimension) {
+        return dimension == 0 || dimension == boardSize - 1;
     }
 
-    // todo implement
-    // public boolean isBuffer(int row, int col) {}
+    // Is the location a corner tile?
+    public boolean isCorner(int row, int col) {
+        return (isBoardEdge(row) && isBoardEdge(col));
+    }
 
-    // todo implement
-    // public boolean isEdge(int row, int col) {}
+    // Assuming corners were accounted for, checks if it's a buffer zone tile
+    public boolean isBuffer(int row, int col) {
+        // Finds how close each dimension is to an edge, picking whichever edge is closer
+        int rowDiff = Math.min(row, (boardSize - 1) - row);
+        int colDiff = Math.min(col, (boardSize - 1) - col);
+        return (rowDiff <= 1 && colDiff <= 1);
+    }
 
-    // todo implement
-    // public int bufferScore(int row, int col) {}
+    // Assumes corners and buffers were accounted for, checks if it's an edge
+    public boolean isEdge(int row, int col) {
+        return (isBoardEdge(row) || isBoardEdge(col));
+    }
+
+    // Buffer zones are okay if we have the nearby corner. If we don't, they are horrible.
+    public int bufferScore(int row, int col) {
+        // We've guaranteed this piece is near a corner, so it's one or the other edge.
+        int cornerRow = row <= 1 ? 0 : boardSize - 1;
+        int cornerCol = col <= 1 ? 0 : boardSize - 1;
+
+        return this.boardState[cornerRow][cornerCol] == this.currentPlayer ? GOOD_BUFFER_SCORE : BAD_BUFFER_SCORE;
+    }
 
     // Getters and setters:
 

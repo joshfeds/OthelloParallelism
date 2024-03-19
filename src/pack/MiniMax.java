@@ -87,7 +87,7 @@ public class MiniMax {
         if (children != null) {
             for (Node child : children) {
                 // createLeaves(child);
-                calculateMoveScore(child);
+                updateMoveScore(child);
             }
         }
     }
@@ -102,14 +102,14 @@ public class MiniMax {
     }
 
     // Assigns a score to the (leaf?) node.
-    private void calculateMoveScore(Node n) {
+    private void updateMoveScore(Node n) {
         if (SCORE_DEBUGGING) 
             System.out.println("Calculating score for " + n);
 
         n.score = 0;
         if (n.score != null) {
             // Adjust score based on amount of fronteir vs interior locations will be obtained.
-            n.score += board.countFrontiersAndInteriors(n.getMove());
+            n.score += board.calculateScore(n.getMove());
 
             if (SCORE_DEBUGGING)
                 System.out.println("Score after counting frontiers and interiors: " + n.score);

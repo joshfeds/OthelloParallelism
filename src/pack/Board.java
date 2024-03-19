@@ -22,6 +22,8 @@ public class Board {
     private final int OPP_DIRECTION = 4;
     // Maps valid moves to directions to fill in for current player.
     private HashMap<Point, HashSet<Integer>> validMoves;
+
+    // Score increments (todo add constants)
     
     public Board(int boardSize) {
         if (DEBUGGING) System.out.println("New board created.");
@@ -171,18 +173,11 @@ public class Board {
 
     // Count the amount of frontier and interior pieces that will be obtained by the current player.
     // Increments for each interior and decrements for each frontier.
-    public int countFrontiersAndInteriors(Point mv) {
+    public int calculateScore(Point mv) {
         // todo Make that move then reverse it??
+        // Initialize the result to the score of the first tile in the move.
         int result = 0;
-
-        // Check the current location of the move.
-        if (isInterior(mv.x, mv.y)) {
-            result++;
-            if (DEBUGGING) System.out.println("init spot is interior ++");
-        } else {
-            result--;
-            if (DEBUGGING) System.out.println("init spot is frontier --");
-        }
+        result += calculateSingletonScore(mv.x, mv.y);
 
         // Get the associated directions to travel.
         HashSet<Integer> dirs = validMoves.get(mv);
@@ -195,13 +190,7 @@ public class Board {
                 if (DEBUGGING) 
                     System.out.println("========\nCurrent spot is: " + curX + ", " + curY);
 
-                if (isInterior(curX, curY)) {
-                    result++;
-                    if (DEBUGGING) System.out.println("\tis interior ++");
-                } else {
-                    result--;
-                    if (DEBUGGING) System.out.println("\tis frontier --");
-                }
+                result += calculateSingletonScore(curX, curY);
 
                 curX += xOffsets[dir];
                 curY += yOffsets[dir];
@@ -211,7 +200,33 @@ public class Board {
         return result;
     }
 
-    // Helper method for countFrontiersAndInteriors.
+    // Returns the score of a single tile.
+    public int calculateSingletonScore(int row, int col) {
+        int res = 0;
+
+        if (isInterior(row, col)) {
+            res++;
+            if (DEBUGGING) System.out.println("\t(" + row + ", " + col +") is interior");
+        }
+        else {
+            res--;
+            if (DEBUGGING) System.out.println("\t(" + row + ", " + col +") is frontier");
+        }
+
+        if (isCorner(row, col)) {
+            res += 20;
+            if (DEBUGGING) System.out.println("\t(" + row + ", " + col +") is a corner");
+        }
+
+        // if (isBuffer(row, col))
+        //     res += bufferScore(row, col);
+
+        // if (isEdge(row, col))
+        //     res += 10;
+
+        return res;
+    }
+
     // Checks surrounding tiles for empty slots.
     public boolean isInterior(int row, int col) {
         boolean result = true;
@@ -225,6 +240,23 @@ public class Board {
 
         return result;
     }
+
+    // Is the location a corner tile?
+    public boolean isCorner(int row, int col) {
+        if ((row == 0 || row == boardSize - 1) && (col == 0 || col == boardSize - 1))
+            return true;
+        
+        return false;
+    }
+
+    // todo implement
+    // public boolean isBuffer() {}
+
+    // todo implement
+    // public boolean isEdge() {}
+
+    // todo implement
+    // public int bufferScore() {}
 
     // Getters and setters:
 

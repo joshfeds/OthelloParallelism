@@ -13,13 +13,15 @@ public class MiniMax {
     private int boardSize;
     private ArrayList<Node> roots;
 
+    public final int LOOKAHEAD = 10; // todo play with this value.
+
     MiniMax(int boardSize) {
         // Initialize the ArrayList of root nodes.
         this.board = new Board(boardSize);
         this.boardSize = boardSize;
         int [][] parentState = new int[boardSize][boardSize];
         board.copyState(parentState);
-        this.roots = createNodes(true, parentState);
+        this.roots = createNodes(false, parentState);
         makeTree();
     }
 
@@ -102,18 +104,62 @@ public class MiniMax {
     }
 
     // Assigns a score to the (leaf?) node.
+    // TODO implement lookahead
     private void updateMoveScore(Node n) {
         if (SCORE_DEBUGGING) 
             System.out.println("Calculating score for " + n);
 
-        n.score = 0;
-        if (n.score != null) {
-            // Adjust score based on amount of fronteir vs interior locations will be obtained.
+        // If n is a leaf node, do what I did below
+        if (n.isLeaf()) {
+            n.score = 0;
             n.score += board.calculateScore(n.getMove());
 
             if (SCORE_DEBUGGING)
                 System.out.println("Score after counting frontiers and interiors: " + n.score);
+        } else {
+            ArrayList<Node> myChildren = n.getChildren();
+
+            // todo dry violation?? :(
+            if (n.getIsMax()) {
+                int maxChildScore = Integer.MIN_VALUE;
+                for (Node child : myChildren) {
+                    if (child.score == null)
+                        updateMoveScore(child);
+                    
+                    if (child.score > maxChildScore)
+                        maxChildScore = child.score;
+                }
+
+                n.score = maxChildScore;
+            } else {
+                int minChildScore = Integer.MAX_VALUE;
+                for (Node child : myChildren) {
+                    if (child.score == null)
+                        updateMoveScore(child);
+
+                    if (child.score < minChildScore) 
+                        minChildScore = child.score;
+                }
+
+                n.score = minChildScore;
+            }
         }
+    }
+
+    // TODO
+    // Function that returns node out of some list of nodes with the best score
+    public Node getBestOption(ArrayList<Node> options) throws Exception {
+        if (!(options.get(0).getIsMax())) {
+            throw new Exception("Should not be selecting move for human player.");
+        }
+
+        for (Node n : options) {
+            // Make all necessary subtrees.
+            // Update the move's score.
+            updateMoveScore(n);
+        }
+
+        return null; // todo delete
     }
 }
 
@@ -123,7 +169,7 @@ class Node {
     private int player;
     private boolean isMaxPlayer;
     public Integer score;
-    private List<Node> children;
+    private ArrayList<Node> children;
 
     // Constructor.
     Node(int [][] state, Point move, int player, boolean isMax) {
@@ -132,7 +178,12 @@ class Node {
         this.player = player;
         this.isMaxPlayer = isMax;
         this.score = null; // Assign a value on calculation.
-        this.children = new ArrayList<>();
+        // this.children = new ArrayList<>();
+        this.children = null;
+    }
+
+    public boolean isLeaf() {
+        return (children == null);
     }
 
     // Getters and setters.
@@ -155,6 +206,10 @@ class Node {
 
     public void setChildren(ArrayList<Node> children) {
         this.children = children;
+    }
+
+    public ArrayList<Node> getChildren() {
+        return this.children;
     }
 
     // Functions for debugging output:

@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.awt.Point;
 
 public class Board {
-    public final boolean DEBUGGING = true;
+    public final boolean DEBUGGING = false;
     private int boardSize;
     public int[][] boardState;
     private int currentPlayer = 1;

@@ -13,7 +13,7 @@ public class MiniMax {
     private int boardSize;
     private ArrayList<Node> roots;
 
-    public final int LOOKAHEAD = 10; // todo play with this value.
+    public final int LOOKAHEAD = 2; // todo play with this value.
 
     MiniMax(int boardSize) throws Exception {
         // Initialize the ArrayList of root nodes.
@@ -97,12 +97,12 @@ public class MiniMax {
     public void makeTree() throws Exception {
         if (this.roots != null) {
             for (Node root : roots) {
-                if (DEBUGGING) System.out.println("Tree sprouting for " + root + "\n");
+                if (SCORE_DEBUGGING) System.out.println("Tree sprouting for " + root + "\n");
                 createLeaves(root);
 
                 // todo delete below debugging code.
                 // Calculate score for all leaves.
-                if (DEBUGGING) {
+                if (SCORE_DEBUGGING) {
                     Node winner = getBestOption(root.getChildren());
                     System.out.println("The best option is: " + winner); 
                 }
@@ -113,16 +113,14 @@ public class MiniMax {
     // Assigns a score to the (leaf?) node.
     // Assigns a score to the node.
     private void updateMoveScore(Node n) {
-        if (SCORE_DEBUGGING) 
-            System.out.println("Calculating score for " + n);
-
         if (n.isLeaf()) {
             // If n is a leaf node, get the score from the board class.
+            board.setBoardState(n.getStateBeforeMove(), n.getPlayer());
             n.score = 0;
             n.score += board.calculateScore(n.getMove());
 
             if (SCORE_DEBUGGING)
-                System.out.println("Score after counting frontiers and interiors: " + n.score);
+                System.out.println("\tLeaf score: " + n.score);
         } else {
             // Get the score from my children.
             ArrayList<Node> myChildren = n.getChildren();
@@ -139,6 +137,7 @@ public class MiniMax {
                         maxChildScore = child.score;
                 }
 
+                if (SCORE_DEBUGGING) System.out.println("\tchose max: " + maxChildScore);
                 n.score = maxChildScore;
             } else {
                 // Assign n's score as the minimum of its children.
@@ -151,6 +150,7 @@ public class MiniMax {
                         minChildScore = child.score;
                 }
 
+                if (SCORE_DEBUGGING) System.out.println("\tchose min: " + minChildScore);
                 n.score = minChildScore;
             }
         }
@@ -160,6 +160,7 @@ public class MiniMax {
     // todo description
     public void buildLookahead(Node n, int traversalCount) {
         // Note that getBestOption, which calls this method, already ensures n is initially the bot.
+        if (SCORE_DEBUGGING) System.out.println("\t\tlet's build lookahead!");
 
         int levelsToTraverse = LOOKAHEAD - traversalCount;
 
@@ -181,9 +182,13 @@ public class MiniMax {
             throw new Exception("Should not be selecting move for human player.");
         }
 
-        int max = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
         Node best = null;
         for (Node n : options) {
+            if (SCORE_DEBUGGING) {
+                System.out.println("\tobserving option " + n);
+                n.printState();
+            }
             // Make all necessary subtrees.
             buildLookahead(n, 0);
             // Update the move's score.
@@ -193,6 +198,7 @@ public class MiniMax {
                 max = n.score;
                 best = n;
             }
+            if (SCORE_DEBUGGING) System.out.println("Score of " + n + ": " + n.score);
         }
 
         return best;

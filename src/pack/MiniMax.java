@@ -15,7 +15,7 @@ public class MiniMax {
 
     public final int LOOKAHEAD = 10; // todo play with this value.
 
-    MiniMax(int boardSize) {
+    MiniMax(int boardSize) throws Exception {
         // Initialize the ArrayList of root nodes.
         this.board = new Board(boardSize);
         this.boardSize = boardSize;
@@ -89,38 +89,47 @@ public class MiniMax {
         if (children != null) {
             for (Node child : children) {
                 // createLeaves(child);
-                updateMoveScore(child);
+                // updateMoveScore(child);
             }
         }
     }
 
-    public void makeTree() {
+    public void makeTree() throws Exception {
         if (this.roots != null) {
             for (Node root : roots) {
                 if (DEBUGGING) System.out.println("Tree sprouting for " + root + "\n");
                 createLeaves(root);
+
+                // todo delete below debugging code.
+                // Calculate score for all leaves.
+                if (DEBUGGING) {
+                    Node winner = getBestOption(root.getChildren());
+                    System.out.println("The best option is: " + winner); 
+                }
             }
         }
     }
 
     // Assigns a score to the (leaf?) node.
-    // TODO implement lookahead
+    // Assigns a score to the node.
     private void updateMoveScore(Node n) {
         if (SCORE_DEBUGGING) 
             System.out.println("Calculating score for " + n);
 
-        // If n is a leaf node, do what I did below
         if (n.isLeaf()) {
+            // If n is a leaf node, get the score from the board class.
             n.score = 0;
             n.score += board.calculateScore(n.getMove());
 
             if (SCORE_DEBUGGING)
                 System.out.println("Score after counting frontiers and interiors: " + n.score);
         } else {
+            // Get the score from my children.
             ArrayList<Node> myChildren = n.getChildren();
 
             // todo dry violation?? :(
             if (n.getIsMax()) {
+                // Assign n's score as the maximum of its children.
                 int maxChildScore = Integer.MIN_VALUE;
                 for (Node child : myChildren) {
                     if (child.score == null)
@@ -132,6 +141,7 @@ public class MiniMax {
 
                 n.score = maxChildScore;
             } else {
+                // Assign n's score as the minimum of its children.
                 int minChildScore = Integer.MAX_VALUE;
                 for (Node child : myChildren) {
                     if (child.score == null)
@@ -146,20 +156,46 @@ public class MiniMax {
         }
     }
 
-    // TODO
-    // Function that returns node out of some list of nodes with the best score
+    // todo consider reevaluating score for nodes after building lookahead.
+    // todo description
+    public void buildLookahead(Node n, int traversalCount) {
+        // Note that getBestOption, which calls this method, already ensures n is initially the bot.
+
+        int levelsToTraverse = LOOKAHEAD - traversalCount;
+
+        if (levelsToTraverse > 0) {
+            // If n doesn't have children, make some before traversing further.
+            if (n.isLeaf())
+                createLeaves(n);
+            
+            ArrayList<Node> children = n.getChildren();
+            for (Node ch : children) 
+                buildLookahead(ch, traversalCount + 1);
+        }
+    }
+
+    // Returns the node from the list of options with the best score.
+    // May update score values and build subtrees.
     public Node getBestOption(ArrayList<Node> options) throws Exception {
         if (!(options.get(0).getIsMax())) {
             throw new Exception("Should not be selecting move for human player.");
         }
 
+        int max = Integer.MAX_VALUE;
+        Node best = null;
         for (Node n : options) {
             // Make all necessary subtrees.
+            buildLookahead(n, 0);
             // Update the move's score.
             updateMoveScore(n);
+
+            if (max < n.score) {
+                max = n.score;
+                best = n;
+            }
         }
 
-        return null; // todo delete
+        return best;
     }
 }
 

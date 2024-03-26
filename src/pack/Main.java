@@ -5,7 +5,7 @@ import pack.Board;
 public class Main {
     public static final double NANO_TO_SEC = 0.000000001;
 
-    public static void main(String[] args) {   
+    public static void main(String[] args) throws Exception {   
         Board board = new Board(8);
         board.printBoard();
         try {

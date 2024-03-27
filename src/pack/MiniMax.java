@@ -100,8 +100,8 @@ public class MiniMax {
                 if (SCORE_DEBUGGING) System.out.println("Tree sprouting for " + root + "\n");
                 createLeaves(root);
 
-                // todo delete below debugging code.
-                // Calculate score for all leaves.
+                // Calculate score for all leaves. 
+                // NOTE!! This is just for testing the backend.
                 if (SCORE_DEBUGGING) {
                     Node winner = getBestOption(root.getChildren());
                     System.out.println("The best option is: " + winner); 
@@ -125,7 +125,6 @@ public class MiniMax {
             // Get the score from my children.
             ArrayList<Node> myChildren = n.getChildren();
 
-            // todo dry violation?? :(
             if (n.getIsMax()) {
                 // Assign n's score as the maximum of its children.
                 int maxChildScore = Integer.MIN_VALUE;
@@ -156,8 +155,7 @@ public class MiniMax {
         }
     }
 
-    // todo consider reevaluating score for nodes after building lookahead.
-    // todo description
+    // Builds LOOKAHEAD levels of the gametree beneath the node n.
     public void buildLookahead(Node n, int traversalCount) {
         // Note that getBestOption, which calls this method, already ensures n is initially the bot.
         if (SCORE_DEBUGGING) System.out.println("\t\tlet's build lookahead!");
@@ -220,7 +218,6 @@ class Node {
         this.player = player;
         this.isMaxPlayer = isMax;
         this.score = null; // Assign a value on calculation.
-        // this.children = new ArrayList<>();
         this.children = null;
     }
 

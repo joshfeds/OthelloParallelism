@@ -1,8 +1,41 @@
-## Instructions
-Requirements: [Java 21](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html) and [JavaFX](https://openjfx.io/openjfx-docs/#install-javafx)
+# How to compile and play our fun project
 
-1. Clone the repo with `git clone https://github.com/joshfeds/OthelloParallelism`.
-2. To compile and run, type `java BoardDrawer.java` to open the JavaFX app.
+## Option 1: Using IntelliJ
+1. Install [Java 21](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html), if for some reason you don't have it already.
 
-As of 3/8/2024, the core game functionality of Othello is complete, and you can play against our bot. However, all interactions are instantaneous, and other features such as score tracking have not been implemented yet.
+2. Install [JavaFX](https://gluonhq.com/products/javafx/):
+    
+    a. On the Gluon site, download the JavaFX SDK for your operating system. For example, click this one if you have Windows:
+    ![](/images/downloadjavafx.png)
 
+    b. After downloading the zip, extract the contents to a desired location on your computer, e.g., Program Files. Remember where you saved the SDK for later.
+    ![](/images/savejavafx.png)
+
+3. Install [IntelliJ Community Edition](https://www.jetbrains.com/idea/download/?section=windows). (Scroll down, it's under the "Ultimate" Edition.)
+
+4. Open IntelliJ. Click "Get from VCS" in the top right, then clone the repo by pasting the URL: `https://github.com/joshfeds/OthelloParallelism`. You may have to log in to GitHub.
+![](images/clone.png)
+
+5. After cloning, you'll notice BoardDrawer.java has hundreds of errors, since JavaFX has not been fully integrated yet. Let's fix that.
+
+    a. Go to `File → Project Structure`.
+    ![](images/projectstructure.png)
+
+    b. Under `Project`, go to `Language Level`, and select Java 21 .
+    ![](images/javaversion.png)
+
+    c. Under `Libraries`, click `New Project Library`, then `Java`.
+    ![](images/libraries.png)
+    Find where you saved the JavaFX SDK folder, select the `lib` folder, then click OK.
+    ![](images/javafxlib.png)
+
+The errors should hopefully disappear.
+
+6. Finally, open `BoardDrawer.java`, right click, and run.
+![](images/run.png)
+
+A window with our game will appear, and you can play against the first iteration of our AI. Good luck.
+![](images/parathellodemo.gif)
+
+
+Note: Some frontend polish is missing, like the current scores for each player, and the AI moving instantly. These should all be resolved upon project completion.

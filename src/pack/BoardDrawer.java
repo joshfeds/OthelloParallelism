@@ -143,10 +143,6 @@ public class BoardDrawer extends Application {
         borderPane.setLeft(leftPanel);
         borderPane.setRight(rightPanel);
 
-
-
-
-
         // Draw window containing the group with all our cool graphics
         Scene scene = new Scene(borderPane, windowWidth, windowHeight);
         scene.setFill(Color.rgb(72, 35,35));

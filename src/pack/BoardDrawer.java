@@ -81,8 +81,8 @@ public class BoardDrawer extends Application {
         BorderPane.setMargin(root, new Insets(0));
 
         // Get scores and names for both players.
-        int humanPieces = 23;
-        int botPieces = 17;
+        int humanPieces = 2;
+        int botPieces = 2;
 
         String humanName = "You";
         String botName = "Mr. Othello";
@@ -358,6 +358,19 @@ public class BoardDrawer extends Application {
         }
     }
 
+    // Returns an array containing the number of pieces each player has (not the minimax scores).
+    private int[] getPlayerScores() {
+        int[] scores = {0,0};
+        for (int[] arr : board) {
+            for (int piece : arr) {
+                if (piece == bored.HUMANPLAYER)
+                    scores[0]++;
+                else if (piece == bored.BOTPLAYER)
+                    scores[1]++;
+            }
+        }
+        return scores;
+    }
     public void start(Stage stage) throws IOException{
         // Get all the scenes
         this.stage = stage;

@@ -15,10 +15,10 @@ import javafx.stage.Stage;
 public class MainMenu {
     // Various constants from BoardDrawer
     public static boolean DEBUG = true;
-    public static int boardSize = 8;
-    public static int cellSize = 100;
-    public static double windowWidth = 1.5 * boardSize * cellSize;
-    public static double windowHeight = 1.01 * boardSize * cellSize;
+    public static int boardSize = BoardDrawer.boardSize;
+    public static int cellSize = BoardDrawer.cellSize;
+    public static double windowWidth = BoardDrawer.windowWidth;
+    public static double windowHeight = BoardDrawer.windowHeight;
 
     public static Color BOARD_COLOR = Color.rgb(0, 159, 3);
     // Draws the main menu scene containing all the buttons on startup.

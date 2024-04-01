@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9c2054be-045b-4247-af60-661e4f4bc640" name="Changes" comment="Othello is playable">
+    <list default="true" id="9c2054be-045b-4247-af60-661e4f4bc640" name="Changes" comment="AI somewhat working">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/pack/BoardDrawer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pack/BoardDrawer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pack/MiniJosh.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pack/MiniJosh.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/pack/MiniMax.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pack/MiniMax.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -24,6 +25,7 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -90,6 +92,12 @@
       <workItem from="1709474355046" duration="7145000" />
       <workItem from="1709599410046" duration="5550000" />
       <workItem from="1709657097516" duration="36419000" />
+      <workItem from="1709928126203" duration="910000" />
+      <workItem from="1709931093019" duration="620000" />
+      <workItem from="1711243109586" duration="322000" />
+      <workItem from="1711548168596" duration="677000" />
+      <workItem from="1711829209898" duration="6213000" />
+      <workItem from="1711928015719" duration="2629000" />
     </task>
     <task id="LOCAL-00001" summary="Othello is playable">
       <option name="closed" value="true" />
@@ -99,7 +107,15 @@
       <option name="project" value="LOCAL" />
       <updated>1709482983579</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="AI somewhat working">
+      <option name="closed" value="true" />
+      <created>1709772004771</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1709772004771</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -107,7 +123,35 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Othello is playable" />
-    <option name="LAST_COMMIT_MESSAGE" value="Othello is playable" />
+    <MESSAGE value="AI somewhat working" />
+    <option name="LAST_COMMIT_MESSAGE" value="AI somewhat working" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/pack/BoardDrawer.java</url>
+          <line>228</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/pack/MiniJosh.java</url>
+          <line>90</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/pack/MiniJosh.java</url>
+          <line>8</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-field">
+          <url>file://$PROJECT_DIR$/src/pack/MiniMax.java</url>
+          <line>15</line>
+          <properties field="LOOKAHEAD" class="pack.MiniMax" />
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

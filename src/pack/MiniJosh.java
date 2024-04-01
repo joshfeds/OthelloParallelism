@@ -8,18 +8,19 @@ import java.awt.Point;
 
 public class MiniJosh {
     public final boolean DEBUGGING = false;
+    public final boolean SCORE_DEBUGGING = false;
     public Board board;
     private int boardSize;
     public ArrayList<Node2> roots;
 
-    MiniJosh(int boardSize) {
+    public final int LOOKAHEAD = 2;
+    MiniJosh(int boardSize) throws Exception {
         // Initialize the ArrayList of root nodes.
         this.board = new Board(boardSize);
         this.boardSize = boardSize;
         int [][] parentState = new int[boardSize][boardSize];
         board.copyState(parentState);
-        this.roots = createNodes(true, parentState);
-
+        this.roots = createNodes(false, parentState);
         makeTree();
     }
 
@@ -84,20 +85,106 @@ public class MiniJosh {
         boolean isChildMax = !parent.getIsMax();
         ArrayList<Node2> children = createNodes(isChildMax, childrenState);
         parent.setChildren(children);
-        /*if (children != null) {
-            for (Node2 child : children) {
-                System.out.println(child);
-            }
-        }*/
     }
 
-    public void makeTree() {
+    public void makeTree() throws Exception {
         if (this.roots != null) {
             for (Node2 root : roots) {
-                if (DEBUGGING) System.out.println("Tree sprouting for " + root + "\n");
+                if (SCORE_DEBUGGING) System.out.println("Tree sprouting for " + root + "\n");
                 createLeaves(root);
+
+                // Calculate score for all leaves.
+                // NOTE!! This is just for testing the backend.
+                if (SCORE_DEBUGGING) {
+                    Node2 winner = getBestOption(root.getChildren());
+                    System.out.println("The best option is: " + winner);
+                }
             }
         }
+    }
+
+    private void updateMoveScore(Node2 n) {
+        if (n.isLeaf()) {
+            // If n is a leaf node, get the score from the board class.
+            board.setBoardState(n.getStateBeforeMove(), n.getPlayer());
+            n.score = 0;
+            n.score += board.calculateScore(n.getMove());
+
+            if (SCORE_DEBUGGING)
+                System.out.println("\tLeaf score: " + n.score);
+        } else {
+            // Get the score from my children.
+            ArrayList<Node2> myChildren = n.getChildren();
+
+            if (n.getIsMax()) {
+                // Assign n's score as the maximum of its children.
+                int maxChildScore = Integer.MIN_VALUE;
+                for (Node2 child : myChildren) {
+                    if (child.score == null)
+                        updateMoveScore(child);
+
+                    if (child.score > maxChildScore)
+                        maxChildScore = child.score;
+                }
+
+                if (SCORE_DEBUGGING) System.out.println("\tchose max: " + maxChildScore);
+                n.score = maxChildScore;
+            } else {
+                // Assign n's score as the minimum of its children.
+                int minChildScore = Integer.MAX_VALUE;
+                for (Node2 child : myChildren) {
+                    if (child.score == null)
+                        updateMoveScore(child);
+
+                    if (child.score < minChildScore)
+                        minChildScore = child.score;
+                }
+
+                if (SCORE_DEBUGGING) System.out.println("\tchose min: " + minChildScore);
+                n.score = minChildScore;
+            }
+        }
+    }
+    public void buildLookahead(Node2 n, int traversalCount) {
+        // Note that getBestOption, which calls this method, already ensures n is initially the bot.
+        if (SCORE_DEBUGGING) System.out.println("\t\tlet's build lookahead!");
+
+        int levelsToTraverse = LOOKAHEAD - traversalCount;
+
+        if (levelsToTraverse > 0) {
+            // If n doesn't have children, make some before traversing further.
+            if (n.isLeaf())
+                createLeaves(n);
+
+            ArrayList<Node2> children = n.getChildren();
+            for (Node2 ch : children)
+                buildLookahead(ch, traversalCount + 1);
+        }
+    }
+
+    public Node2 getBestOption(ArrayList<Node2> options) throws Exception {
+        if (!(options.get(0).getIsMax())) {
+            throw new Exception("Should not be selecting move for human player.");
+        }
+        System.out.println("THIS IS OPTIONS: " + options);
+        int max = Integer.MIN_VALUE;
+        Node2 best = null;
+        for (Node2 n : options) {
+            System.out.println("\tobserving option " + n);
+            n.printState();
+            // Make all necessary subtrees.
+            buildLookahead(n, 0);
+            // Update the move's score.
+            updateMoveScore(n);
+
+            if (max < n.score) {
+                max = n.score;
+                best = n;
+            }
+            System.out.println("Score of " + n + ": " + n.score);
+        }
+        System.out.println("we ended the loop");
+        return best;
     }
 }
 
@@ -106,8 +193,8 @@ class Node2 {
     private Point move;
     private int player;
     private boolean isMaxPlayer;
-    private int score;
-    private List<Node2> children;
+    public Integer score;
+    private ArrayList<Node2> children;
 
     // Constructor.
     Node2(int [][] state, Point move, int player, boolean isMax) {
@@ -115,10 +202,13 @@ class Node2 {
         this.move = move;
         this.player = player;
         this.isMaxPlayer = isMax;
-        this.score = 0; // todo actually compute score
-        this.children = new ArrayList<>();
+        this.score = null; // Assign a value on calculation.
+        this.children = null;
     }
 
+    public boolean isLeaf() {
+        return (children == null);
+    }
     // Getters and setters.
 
     public int [][] getStateBeforeMove() {
@@ -141,6 +231,9 @@ class Node2 {
         this.children = children;
     }
 
+    public ArrayList<Node2> getChildren() {
+        return this.children;
+    }
     // Functions for debugging output:
 
     public String toString() {

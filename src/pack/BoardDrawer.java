@@ -42,10 +42,10 @@ public class BoardDrawer extends Application {
     public static int[][] board = bored.boardState;
 
     // Create the scene for the board
-    public Scene getBoardScene() throws IOException {
+    public Scene getBoardScene() throws Exception {
         // All shapes must be added to this Group to be drawn
         Group root = new Group();
-        MiniJosh gameTree = new MiniJosh(8);
+        MiniMax gameTree = new MiniMax(8);
 
         // Draw border of board
         Rectangle boardBorder = new Rectangle(8 * cellSize, 8 * cellSize);
@@ -166,7 +166,7 @@ public class BoardDrawer extends Application {
 
         return playerImageView;
     }
-    public void getPlayerInput(Group root, MiniJosh gameTree, Set<Point> nextMoves) {
+    public void getPlayerInput(Group root, MiniMax gameTree, Set<Point> nextMoves) {
         // mouse click test
         // TODO: Send cell coords back to pack.Board.java when clicked
         root.setOnMouseClicked(event -> {
@@ -237,8 +237,14 @@ public class BoardDrawer extends Application {
                 drawNextMoveRings(root, nextMoves);
 
                 clicked = gameTree.roots.get(randVal).getMove();
+                try {
+                    System.out.println("here");
 
-
+                    //clicked = gameTree.getBestOption(gameTree.roots).getMove();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.println(clicked);
                 if (DEBUG && nextMoves.contains(clicked)) {
                     bored.makeMove(clicked);
                     gameTree.board = bored;
@@ -374,7 +380,11 @@ public class BoardDrawer extends Application {
     public void start(Stage stage) throws IOException{
         // Get all the scenes
         this.stage = stage;
-        this.boardScene = getBoardScene();
+        try {
+            this.boardScene = getBoardScene();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         this.mainMenuScene = MainMenu.getMainMenuScene(this.stage, this.boardScene, this.aboutScene);
         this.aboutScene = MainMenu.getAboutScene(this.stage, this.mainMenuScene);
 

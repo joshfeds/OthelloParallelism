@@ -8,10 +8,10 @@ import java.awt.Point;
 
 public class MiniMax {
     public final boolean DEBUGGING = false;
-    public final boolean SCORE_DEBUGGING = true;
-    private Board board;
+    public final boolean SCORE_DEBUGGING = false;
+    public Board board;
     private int boardSize;
-    private ArrayList<Node> roots;
+    public ArrayList<Node> roots;
 
     public final int LOOKAHEAD = 2; // todo play with this value.
 

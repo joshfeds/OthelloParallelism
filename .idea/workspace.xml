@@ -7,8 +7,6 @@
     <list default="true" id="9c2054be-045b-4247-af60-661e4f4bc640" name="Changes" comment="AI somewhat working">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/pack/BoardDrawer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pack/BoardDrawer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pack/MiniJosh.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pack/MiniJosh.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pack/MiniMax.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pack/MiniMax.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -130,11 +128,6 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/pack/BoardDrawer.java</url>
-          <line>228</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/pack/MiniJosh.java</url>
           <line>90</line>
           <option name="timeStamp" value="6" />
@@ -146,7 +139,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-field">
           <url>file://$PROJECT_DIR$/src/pack/MiniMax.java</url>
-          <line>15</line>
+          <line>11</line>
           <properties field="LOOKAHEAD" class="pack.MiniMax" />
           <option name="timeStamp" value="3" />
         </line-breakpoint>

@@ -213,7 +213,7 @@ public class BoardDrawer extends Application {
 
             root.getChildren().clear();
             root.getChildren().add(boardBorder);
-
+            board = bored.boardState;
             initBoard(root, diskRadius);
 
             nextMoves.clear();
@@ -250,7 +250,7 @@ public class BoardDrawer extends Application {
 
             root.getChildren().clear();
             root.getChildren().add(boardBorder);
-
+            board = bored.boardState;
             initBoard(root, diskRadius);
 
             nextMoves.clear();

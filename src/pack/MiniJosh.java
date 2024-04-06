@@ -16,7 +16,7 @@ public class MiniJosh {
     public final int LOOKAHEAD = 2;
     MiniJosh(int boardSize) throws Exception {
         // Initialize the ArrayList of root nodes.
-        this.board = new Board(boardSize);
+        this.board = new Board();
         this.boardSize = boardSize;
         int [][] parentState = new int[boardSize][boardSize];
         board.copyState(parentState);
@@ -30,7 +30,7 @@ public class MiniJosh {
         ArrayList<Node2> nodes = new ArrayList<>();
 
         // Each child represents one of the next possible valid moves.
-        Set<Point> valMoves = board.getValidMoves();
+        Set<Point> valMoves = board.getValidMoveset();
 
         if (valMoves.isEmpty()) {
             if (DEBUGGING) System.out.println("Can't make any moves, returning null\n");
@@ -108,7 +108,8 @@ public class MiniJosh {
             // If n is a leaf node, get the score from the board class.
             board.setBoardState(n.getStateBeforeMove(), n.getPlayer());
             n.score = 0;
-            n.score += board.calculateScore(n.getMove());
+            n.score += ScoreUtil.calculateScore(n.getMove(), n.getStateBeforeMove(), n.getPlayer(),
+                    BoardUtil.getValidMoves(n.getStateBeforeMove(), n.getPlayer()));
 
             if (SCORE_DEBUGGING)
                 System.out.println("\tLeaf score: " + n.score);

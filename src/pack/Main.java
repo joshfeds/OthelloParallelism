@@ -6,7 +6,7 @@ public class Main {
     public static final double NANO_TO_SEC = 0.000000001;
 
     public static void main(String[] args) throws Exception {   
-        Board board = new Board(8);
+        Board board = new Board();
         board.printBoard();
         try {
             Thread.sleep(3000);
@@ -22,7 +22,7 @@ public class Main {
             throw new RuntimeException(e);
         }
 
-        MiniMax gameTree = new MiniMax(8);
+        MiniMax gameTree = new MiniMax();
         long end = System.nanoTime();
         double runtime = (end - start) / (NANO_TO_SEC);
         System.out.println("Game tree construction finished in " + runtime + " sec.");

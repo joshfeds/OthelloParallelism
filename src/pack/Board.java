@@ -7,38 +7,23 @@ import java.util.HashMap;
 import java.awt.Point;
 
 public class Board {
-    public final boolean DEBUGGING = false;
-    private int boardSize;
+
     public int[][] boardState;
     private int currentPlayer = 1;
-
+    private int boardSize;
     public final int BOTPLAYER = 2;
     public final int HUMANPLAYER = 1;
 
-    // Corresponds to various path directions.
-    private int[] xOffsets = {0, 1, 1,  1,  0, -1, -1, -1};
-    private int[] yOffsets = {1, 1, 0, -1, -1, -1,  0,  1};
-    // Amount to add to some index (mod size) to get the opposite direction.
-    private final int OPP_DIRECTION = 4;
-    // Maps valid moves to directions to fill in for current player.
     private HashMap<Point, HashSet<Integer>> validMoves;
 
-    // Score increments 
-    public final int INTERIOR_SCORE = 1;
-    public final int FRONTIER_SCORE = -1;
-    public final int CORNER_SCORE = 20;
-    public final int GOOD_BUFFER_SCORE = 1;
-    public final int BAD_BUFFER_SCORE = -3;
-    public final int EDGE_SCORE = 10;
+
     
-    public Board(int boardSize) {
-        if (DEBUGGING) System.out.println("New board created.");
-        this.boardSize = boardSize;
-        this.boardState = new int[boardSize][boardSize];
+    public Board() {
+        if (BoardGlobals.DEBUGGING) System.out.println("New board created.");
+        this.boardState = new int[BoardGlobals.boardSize][BoardGlobals.boardSize];
         final int[][] startingBoard = {{0, 0, 1}, {1, 1, 1}, {0, 1, 2}, {1, 0, 2}};
-        int halfway = boardSize / 2;
-        for (int i = 0; i < startingBoard.length; i++) {
-            int[] spot = startingBoard[i];
+        int halfway = BoardGlobals.boardSize / 2;
+        for (int[] spot : startingBoard) {
             this.boardState[halfway - spot[0]][halfway - spot[1]] = spot[2];
         }
 
@@ -46,9 +31,9 @@ public class Board {
     }
 
     public void printBoard() {
-        for (int i = 0; i < this.boardState.length; i++) {
-            for (int j = 0; j < this.boardState[i].length; j++) {
-                System.out.print(this.boardState[i][j] + " ");
+        for (int[] row : this.boardState) {
+            for (int spot : row) {
+                System.out.print(spot + " ");
             }
             System.out.println();
         }
@@ -56,101 +41,13 @@ public class Board {
 
     // Updates global mapping keeping track of valid moves for the current player.
     public void updateValidMoves() {
-        this.validMoves = new HashMap<>();
-
-        // Clockwise coordinates around a spot to check for valid moves
-        int[] xOffsets = {0, 1, 1,  1,  0, -1, -1, -1};
-        int[] yOffsets = {1, 1, 0, -1, -1, -1,  0,  1};
-
-        for (int i = 0; i < this.boardSize; i++) {
-            for (int j = 0; j < this.boardSize; j++) {
-                if (this.boardState[i][j] != this.currentPlayer) {
-                    continue;
-                }
-
-                Point currentPoint = new Point(i, j);
-                for (int k = 0; k < xOffsets.length; k++) {
-                    Point foundPoint = findValidSpot(currentPoint, xOffsets[k], yOffsets[k]);
-                    if (foundPoint != null) {
-                        // Add the direction discovered for the move to the mapping.
-                        HashSet<Integer> directions;
-                        int dir = (k + OPP_DIRECTION) % xOffsets.length;
-                        if (!this.validMoves.containsKey(foundPoint)) {
-                            directions = new HashSet<>();
-                        } else {
-                            directions = this.validMoves.get(foundPoint);
-                        }
-
-                        directions.add(dir);
-                        this.validMoves.put(foundPoint, directions);
-                    }
-                }  
-            }
-        }
-    }
-
-    // Finds a valid spot from some spot belonging to the current player.
-    private Point findValidSpot(Point currentPoint, int xInc, int yInc) {
-        int currentX = currentPoint.x + xInc;
-        int currentY = currentPoint.y + yInc;
-        int oppositePlayer = this.currentPlayer == 1 ? 2 : 1;
-        boolean onValidMove = true;
-        boolean foundOppositeTile = false;
-        boolean foundEmptyTile = false;
-        boolean foundMyTile = false;
-
-        while (validIdx(currentX, currentY)) {
-            if (!foundOppositeTile && this.boardState[currentX][currentY] == oppositePlayer) {
-                foundOppositeTile = true;
-            }
-
-            if (!foundEmptyTile && this.boardState[currentX][currentY] == 0) {
-                foundEmptyTile = true;
-                break;
-            }
-
-            // This means the move can't be made.
-            if (!foundMyTile && this.boardState[currentX][currentY] == this.currentPlayer) {
-                foundMyTile = true;
-                break;
-            }
-
-            currentX += xInc;
-            currentY += yInc;
-            onValidMove = false;
-        }
-
-        // If we've seen at least one opposite tile, a single empty
-        // tile, and none of my own tiles, the move is valid.
-        if (foundOppositeTile && foundEmptyTile && !foundMyTile) {
-            return new Point(currentX, currentY);
-        } else {
-            return null;
-        }
+        this.validMoves = BoardUtil.getValidMoves(this.boardState, this.currentPlayer);
     }
 
     // Modifies the board to make the valid move.
     public void makeMove(Point validMove)
     {
-        // Make sure the move is in the global map of valid moves.
-        HashSet<Integer> dirs = validMoves.get(validMove);
-
-        // todo : should I check validity here?
-
-        // Flip the valid move location to the current player's color.
-        boardState[validMove.x][validMove.y] = this.currentPlayer;
-
-        for (Integer direction: dirs) {
-            int curX = validMove.x + xOffsets[direction];
-            int curY = validMove.y + yOffsets[direction];
-
-            // Flip tiles until we hit the our own tile.
-            while (boardState[curX][curY] != this.currentPlayer) {
-                boardState[curX][curY] = this.currentPlayer;
-                curX += xOffsets[direction];
-                curY += yOffsets[direction];
-            }
-        }
+        this.boardState = BoardUtil.applyMove(this.boardState, this.currentPlayer, validMove, this.validMoves);
 
         // Toggle the current player and reset valid moves mapping.
         this.currentPlayer = this.currentPlayer == 1 ? 2 : 1;
@@ -158,125 +55,18 @@ public class Board {
         updateValidMoves();
     }
 
-    // Check index validity. todo delete?
-    public boolean validIdx(int x, int y) {
-        if (x < 0 || y < 0) return false;
-        if (x >= this.boardSize || y >= this.boardSize) return false;
-
-        return true;
-    }
-
     // Copies the contents of the current board state into the array.
     // For node creation in the minimax game tree.
     public void copyState(int [][] copyTo) {
-        for (int i = 0; i < boardSize; i++) {
-            for (int j = 0; j < boardSize; j++)
+        for (int i = 0; i < BoardGlobals.boardSize; i++) {
+            for (int j = 0; j < BoardGlobals.boardSize; j++)
                 copyTo[i][j] = this.boardState[i][j];
         }
     }
 
     // Methods for score calculation:
 
-    // Count the amount of frontier and interior pieces that will be obtained by the current player.
-    // Increments for each interior and decrements for each frontier.
-    public int calculateScore(Point mv) {
-        // todo Make that move then reverse it??
-        // Initialize the result to the score of the first tile in the move.
-        int result = 0;
-        result += calculateSingletonScore(mv.x, mv.y);
 
-        // Get the associated directions to travel.
-        HashSet<Integer> dirs = validMoves.get(mv);
-        for (Integer dir : dirs) {
-            if (DEBUGGING) System.out.println("NEW DIRECTION!!!");
-            int curX = mv.x + xOffsets[dir];
-            int curY = mv.y + yOffsets[dir];
-
-            while (boardState[curX][curY] != this.currentPlayer) {
-                if (DEBUGGING) 
-                    System.out.println("========\nCurrent spot is: " + curX + ", " + curY);
-
-                result += calculateSingletonScore(curX, curY);
-
-                curX += xOffsets[dir];
-                curY += yOffsets[dir];
-            }
-        }
-
-        return result;
-    }
-
-    // Returns the score of a single tile.
-    public int calculateSingletonScore(int row, int col) {
-        int res = 0;
-
-        if (isInterior(row, col)) {
-            res += INTERIOR_SCORE;
-            if (DEBUGGING) System.out.println("\t(" + row + ", " + col +") is interior");
-        }
-        else {
-            res += FRONTIER_SCORE;
-            if (DEBUGGING) System.out.println("\t(" + row + ", " + col +") is frontier");
-        }
-
-        if (isCorner(row, col)) {
-            res += CORNER_SCORE;
-            if (DEBUGGING) System.out.println("\t(" + row + ", " + col + ") is a corner");
-        } else if (isBuffer(row, col)) {
-            res += bufferScore(row, col);
-            if (DEBUGGING) System.out.println("\t(" + row + ", " + col + ") is a buffer");
-        } else if (isEdge(row, col)) {
-            res += EDGE_SCORE;
-            if (DEBUGGING) System.out.println("\t(" + row + ", " + col +") is an edge");
-        }
-
-        return res;
-    }
-
-    // Checks surrounding tiles for empty slots.
-    public boolean isInterior(int row, int col) {
-        boolean result = true;
-
-        for (int i = 0; i < xOffsets.length; i++) {
-            for (int j = 0; j < yOffsets.length; j++) {
-                if (boardState[i][j] == 0)
-                    result = false;
-            }
-        }
-
-        return result;
-    }
-
-    public boolean isBoardEdge(int dimension) {
-        return dimension == 0 || dimension == boardSize - 1;
-    }
-
-    // Is the location a corner tile?
-    public boolean isCorner(int row, int col) {
-        return (isBoardEdge(row) && isBoardEdge(col));
-    }
-
-    // Assuming corners were accounted for, checks if it's a buffer zone tile
-    public boolean isBuffer(int row, int col) {
-        // Finds how close each dimension is to an edge, picking whichever edge is closer
-        int rowDiff = Math.min(row, (boardSize - 1) - row);
-        int colDiff = Math.min(col, (boardSize - 1) - col);
-        return (rowDiff <= 1 && colDiff <= 1);
-    }
-
-    // Assumes corners and buffers were accounted for, checks if it's an edge
-    public boolean isEdge(int row, int col) {
-        return (isBoardEdge(row) || isBoardEdge(col));
-    }
-
-    // Buffer zones are okay if we have the nearby corner. If we don't, they are horrible.
-    public int bufferScore(int row, int col) {
-        // We've guaranteed this piece is near a corner, so it's one or the other edge.
-        int cornerRow = row <= 1 ? 0 : boardSize - 1;
-        int cornerCol = col <= 1 ? 0 : boardSize - 1;
-
-        return this.boardState[cornerRow][cornerCol] == this.currentPlayer ? GOOD_BUFFER_SCORE : BAD_BUFFER_SCORE;
-    }
 
     // Getters and setters:
 
@@ -291,8 +81,8 @@ public class Board {
     // Updates the board with the given information.
     public void setBoardState(int [][] newState, int curPlayer) {
         // Copy the information into the board's state.
-        for (int i = 0; i < this.boardSize; i++) {
-            for (int j = 0; j < this.boardSize; j++)
+        for (int i = 0; i < BoardGlobals.boardSize; i++) {
+            for (int j = 0; j < BoardGlobals.boardSize; j++)
                 this.boardState[i][j] = newState[i][j];
         }
         this.currentPlayer = curPlayer;
@@ -300,7 +90,11 @@ public class Board {
     }
 
     // Returns the set of valid moves the current player can make.
-    public Set<Point> getValidMoves() {
+    public HashMap<Point, HashSet<Integer>> getValidMoves() {
+        return this.validMoves;
+    }
+
+    public Set<Point> getValidMoveset() {
         return this.validMoves.keySet();
     }
 

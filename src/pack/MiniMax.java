@@ -1,49 +1,41 @@
 package pack;
 
-import java.util.List;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.ArrayList;
+import java.util.*;
 import java.awt.Point;
 
 public class MiniMax {
-    public final boolean DEBUGGING = false;
+    public final boolean DEBUGGING = true;
     public final boolean SCORE_DEBUGGING = false;
     public Board board;
-    private int boardSize;
     public ArrayList<Node> roots;
 
     public final int LOOKAHEAD = 2; // todo play with this value.
 
-    MiniMax(int boardSize) throws Exception {
+    MiniMax() throws Exception {
         // Initialize the ArrayList of root nodes.
-        this.board = new Board(boardSize);
-        this.boardSize = boardSize;
-        int [][] parentState = new int[boardSize][boardSize];
+        this.board = new Board();
+        int [][] parentState = new int[BoardGlobals.boardSize][BoardGlobals.boardSize];
         board.copyState(parentState);
-        this.roots = createNodes(false, parentState);
+        this.roots = createNodes(false, parentState,
+                BoardUtil.getValidMoves(parentState, board.getCurrentPlayer()), board.getCurrentPlayer());
         makeTree();
     }
 
     // Returns an arraylist of nodes representing the next possible moves for the current player.
-    public ArrayList<Node> createNodes(boolean isMax, int [][] state) {
+    public ArrayList<Node> createNodes(boolean isMax, int [][] state, HashMap<Point, HashSet<Integer>> validMoves, int player) {
         if (DEBUGGING) System.out.println("Creating nodes:\n-");
         ArrayList<Node> nodes = new ArrayList<>();
 
-        // Each child represents one of the next possible valid moves.
-        Set<Point> valMoves = board.getValidMoves();
 
-        if (valMoves.isEmpty()) {
-            if (DEBUGGING) System.out.println("Can't make any moves, returning null\n");
+        if (validMoves.isEmpty()) {
+            if (BoardGlobals.DEBUGGING) System.out.println("Can't make any moves, returning null\n");
             return null;
         }
 
-        valMoves.forEach(pt -> {
-            HashSet<Integer> dirs = board.getDirections(pt);
-            Node node = new Node(state, pt, board.getCurrentPlayer(), isMax);
-            if (DEBUGGING) {
+        validMoves.keySet().forEach(pt -> {
+            Node node = new Node(state, pt, player, isMax);
+            if (BoardGlobals.DEBUGGING) {
                 System.out.println("pack.Node " + node);
-                System.out.println("Directions: " + board.getDirections(pt));
                 System.out.println("pack.Board state:");
                 node.printState();
                 System.out.println("-");
@@ -55,24 +47,20 @@ public class MiniMax {
         return nodes;
     }
 
-    // From the parent, adds a leaf for each possible move.
+    // From the parent, adds a leaf for each possible move we happen to jive with.
     public void createLeaves(Node parent) {
         if (DEBUGGING) System.out.println("Leaves sprouting for " + parent);
 
-        // Set the board to the parent's state and make the parent's move.
-        board.setBoardState(parent.getStateBeforeMove(), parent.getPlayer());
+        // Make the parent's move.
         if (DEBUGGING) {
             System.out.println("global board state:");
             board.printBoard();
             System.out.println("parent's state:");
             parent.printState();
         }
-        board.makeMove(parent.getMove());
-        int [][] childrenState = new int [boardSize][boardSize];
-        board.copyState(childrenState);
+        int[][] childrenState = BoardUtil.applyMove(parent.getStateBeforeMove(), parent.getPlayer(), parent.getMove(),
+                BoardUtil.getValidMoves(parent.getStateBeforeMove(), parent.getPlayer()));
         if (DEBUGGING) {
-            System.out.println("-\nglobal board after making the move:");
-            board.printBoard();
             System.out.println("children's state:");
             for (int i = 0; i < childrenState.length; i++) {
                 for (int j = 0; j < childrenState.length; j++) {
@@ -84,14 +72,10 @@ public class MiniMax {
 
         // Children are the opposite of their parent.
         boolean isChildMax = !parent.getIsMax();
-        ArrayList<Node> children = createNodes(isChildMax, childrenState);
+        ArrayList<Node> children = createNodes(isChildMax, childrenState,
+                BoardUtil.getValidMoves(childrenState,
+                        parent.getPlayer() == 1 ? 2 : 1), parent.getPlayer() == 1 ? 2 : 1);
         parent.setChildren(children);
-        if (children != null) {
-            for (Node child : children) {
-                // createLeaves(child);
-                // updateMoveScore(child);
-            }
-        }
     }
 
     public void makeTree() throws Exception {
@@ -115,9 +99,9 @@ public class MiniMax {
     private void updateMoveScore(Node n) {
         if (n.isLeaf()) {
             // If n is a leaf node, get the score from the board class.
-            board.setBoardState(n.getStateBeforeMove(), n.getPlayer());
             n.score = 0;
-            n.score += board.calculateScore(n.getMove());
+            n.score += ScoreUtil.calculateScore(n.getMove(), n.getStateBeforeMove(), n.getPlayer(),
+                    BoardUtil.getValidMoves(n.getStateBeforeMove(), n.getPlayer()));
 
             if (SCORE_DEBUGGING)
                 System.out.println("\tLeaf score: " + n.score);
@@ -134,6 +118,11 @@ public class MiniMax {
                     
                     if (child.score > maxChildScore)
                         maxChildScore = child.score;
+
+                    if (maxChildScore > n.getAlpha())
+                        n.setAlpha(maxChildScore);
+
+                    if (n.getAlpha() >= n.getBeta()) break;
                 }
 
                 if (SCORE_DEBUGGING) System.out.println("\tchose max: " + maxChildScore);
@@ -147,6 +136,11 @@ public class MiniMax {
 
                     if (child.score < minChildScore) 
                         minChildScore = child.score;
+
+                    if (minChildScore < n.getBeta())
+                        n.setBeta(minChildScore);
+
+                    if (n.getAlpha() >= n.getBeta()) break;
                 }
 
                 if (SCORE_DEBUGGING) System.out.println("\tchose min: " + minChildScore);
@@ -166,19 +160,16 @@ public class MiniMax {
             // If n doesn't have children, make some before traversing further.
             if (n.isLeaf())
                 createLeaves(n);
-            
+
             ArrayList<Node> children = n.getChildren();
-            for (Node ch : children) 
+            for (Node ch : children)
                 buildLookahead(ch, traversalCount + 1);
         }
     }
 
     // Returns the node from the list of options with the best score.
     // May update score values and build subtrees.
-    public Node getBestOption(ArrayList<Node> options) throws Exception {
-        if (!(options.get(0).getIsMax())) {
-            throw new Exception("Should not be selecting move for human player.");
-        }
+    public Node getBestOption(ArrayList<Node> options) {
 
         int max = Integer.MIN_VALUE;
         Node best = null;
@@ -210,6 +201,8 @@ class Node {
     private boolean isMaxPlayer;
     public Integer score;
     private ArrayList<Node> children;
+    private int alpha; // chad
+    private int beta; // male
 
     // Constructor.
     Node(int [][] state, Point move, int player, boolean isMax) {
@@ -249,6 +242,22 @@ class Node {
 
     public ArrayList<Node> getChildren() {
         return this.children;
+    }
+
+    public void setAlpha(int alpha) {
+        this.alpha = alpha;
+    }
+
+    public int getAlpha() {
+        return this.alpha;
+    }
+
+    public void setBeta(int beta) {
+        this.beta = beta;
+    }
+
+    public int getBeta() {
+        return this.beta;
     }
 
     // Functions for debugging output:

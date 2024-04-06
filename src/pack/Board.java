@@ -55,19 +55,6 @@ public class Board {
         updateValidMoves();
     }
 
-    // Copies the contents of the current board state into the array.
-    // For node creation in the minimax game tree.
-    public void copyState(int [][] copyTo) {
-        for (int i = 0; i < BoardGlobals.boardSize; i++) {
-            for (int j = 0; j < BoardGlobals.boardSize; j++)
-                copyTo[i][j] = this.boardState[i][j];
-        }
-    }
-
-    // Methods for score calculation:
-
-
-
     // Getters and setters:
 
     public int getCurrentPlayer() {
@@ -80,11 +67,7 @@ public class Board {
 
     // Updates the board with the given information.
     public void setBoardState(int [][] newState, int curPlayer) {
-        // Copy the information into the board's state.
-        for (int i = 0; i < BoardGlobals.boardSize; i++) {
-            for (int j = 0; j < BoardGlobals.boardSize; j++)
-                this.boardState[i][j] = newState[i][j];
-        }
+        this.boardState = BoardUtil.copyState(newState);
         this.currentPlayer = curPlayer;
         updateValidMoves();
     }

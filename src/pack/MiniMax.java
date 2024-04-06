@@ -15,7 +15,7 @@ public class MiniMax {
         // Initialize the ArrayList of root nodes.
         this.board = new Board();
         int [][] parentState = new int[BoardGlobals.boardSize][BoardGlobals.boardSize];
-        board.copyState(parentState);
+        parentState = BoardUtil.copyState(board.getBoardState());
         this.roots = createNodes(false, parentState,
                 BoardUtil.getValidMoves(parentState, board.getCurrentPlayer()), board.getCurrentPlayer());
         makeTree();
@@ -28,8 +28,9 @@ public class MiniMax {
 
 
         if (validMoves.isEmpty()) {
-            if (BoardGlobals.DEBUGGING) System.out.println("Can't make any moves, returning null\n");
-            return null;
+            if (BoardGlobals.DEBUGGING) System.out.println("Can't make any moves! Passing for this player's round.\n");
+            nodes.add(new Node(state, null, player, isMax));
+            return nodes;
         }
 
         validMoves.keySet().forEach(pt -> {
@@ -122,7 +123,10 @@ public class MiniMax {
                     if (maxChildScore > n.getAlpha())
                         n.setAlpha(maxChildScore);
 
-                    if (n.getAlpha() >= n.getBeta()) break;
+                    if (n.getAlpha() >= n.getBeta()) {
+                        if (SCORE_DEBUGGING) System.out.println("PRUNED!");
+                        break;
+                    }
                 }
 
                 if (SCORE_DEBUGGING) System.out.println("\tchose max: " + maxChildScore);
@@ -140,7 +144,10 @@ public class MiniMax {
                     if (minChildScore < n.getBeta())
                         n.setBeta(minChildScore);
 
-                    if (n.getAlpha() >= n.getBeta()) break;
+                    if (n.getAlpha() >= n.getBeta()) {
+                        if (SCORE_DEBUGGING) System.out.println("PRUNED!");
+                        break;
+                    }
                 }
 
                 if (SCORE_DEBUGGING) System.out.println("\tchose min: " + minChildScore);

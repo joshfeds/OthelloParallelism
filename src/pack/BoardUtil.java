@@ -87,17 +87,17 @@ public class BoardUtil {
 
 
     public static int[][] applyMove(int[][] oldBoardState, int player, Point validMove, HashMap<Point, HashSet<Integer>> validMoves) {
+        int[][] boardState = copyState(oldBoardState);
+
+        // Special case: If we were sent a non-move, then we pass.
+        if (validMove == null) {
+            return boardState;
+        }
+
         // Make sure the move is in the global map of valid moves.
         HashSet<Integer> dirs = validMoves.get(validMove);
 
         // todo : should I check validity here?
-
-        int[][] boardState = new int[oldBoardState.length][oldBoardState.length];
-        for(int i = 0; i < boardState.length; i++) {
-            for(int j = 0; j < boardState.length; j++) {
-                boardState[i][j] = oldBoardState[i][j];
-            }
-        }
 
         // Flip the valid move location to the current player's color.
         boardState[validMove.x][validMove.y] = player;
@@ -115,6 +115,15 @@ public class BoardUtil {
         }
 
         return boardState;
+    }
+
+    // Copies the contents of the array into a new board.
+    public static int[][] copyState(int [][] source) {
+        int[][] dest = new int[source.length][source.length];
+        for (int i = 0; i < BoardGlobals.boardSize; i++) {
+            System.arraycopy(source[i], 0, dest[i], 0, BoardGlobals.boardSize);
+        }
+        return dest;
     }
 
 }

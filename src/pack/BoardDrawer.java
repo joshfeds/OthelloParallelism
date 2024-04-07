@@ -41,6 +41,8 @@ public class BoardDrawer extends Application {
     static Board bored = new Board();
     public static int[][] board = bored.boardState;
 
+    VBox leftPanel = new VBox();
+    VBox rightPanel = new VBox();
     // Create the scene for the board
     public Scene getBoardScene() throws Exception {
         // All shapes must be added to this Group to be drawn
@@ -88,7 +90,7 @@ public class BoardDrawer extends Application {
         String botName = "Mr. Othello";
 
         // Left panel with human player's score.
-        VBox leftPanel = new VBox();
+
         leftPanel.setPadding(new Insets(cellSize / 8.0));
         leftPanel.setAlignment(Pos.TOP_CENTER);
 
@@ -103,25 +105,11 @@ public class BoardDrawer extends Application {
         humanNameText.setFill(Color.WHITE);
 
         Text humanPiecesText = new Text(Integer.toString(humanPieces));
-        humanPiecesText.setFont(Font.font("Verdana", FontWeight.BOLD, 48));
-        humanPiecesText.setFill(Color.WHITE);
-
-        leftPanel.getChildren().addAll(humanNameText, humanPiecesText);
-
-        // TODO: Display player's image.
-        //ImageView playerImage = getImage("imgs/playerdefault.PNG");
-        //leftPanel.getChildren().addAll(playerImage);
-
-        // Button that goes back to main menu.
-        Button backButton = new Button("Back");
-        MainMenu.styleButton(backButton);
-        backButton.setOnAction(e -> stage.setScene(mainMenuScene));
-
-        leftPanel.getChildren().add(backButton);
+        updateText(humanNameText, humanPiecesText);
 
 
         // Right panel with bot's score.
-        VBox rightPanel = new VBox();
+
         rightPanel.setPadding(new Insets(cellSize / 8.0));
         rightPanel.setAlignment(Pos.TOP_CENTER);
         rightPanel.setMinHeight(windowHeight);
@@ -261,10 +249,53 @@ public class BoardDrawer extends Application {
             }
 
             drawNextMoveRings(root, nextMoves);
+            int [] arr = getPlayerScores();
+            updatePanel(leftPanel);
 
+            Text humanNameText = new Text("You");
+            humanNameText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+            humanNameText.setFill(Color.WHITE);
 
+            Text humanPiecesText = new Text(Integer.toString(arr[0]));
+            updateText(humanNameText, humanPiecesText);
+
+            updatePanel(rightPanel);
+
+            Text botNameText = new Text("Mr. Othello");
+            botNameText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+            botNameText.setFill(Color.WHITE);
+
+            Text botPiecesText = new Text(Integer.toString(arr[1]));
+            botPiecesText.setFont(Font.font("Verdana", FontWeight.BOLD, 48));
+            botPiecesText.setFill(Color.WHITE);
+
+            rightPanel.getChildren().addAll(botNameText, botPiecesText);
         });
     }
+
+    private void updateText(Text humanNameText, Text humanPiecesText) {
+        humanPiecesText.setFont(Font.font("Verdana", FontWeight.BOLD, 48));
+        humanPiecesText.setFill(Color.WHITE);
+
+        leftPanel.getChildren().addAll(humanNameText, humanPiecesText);
+
+        Button backButton = new Button("Back");
+        MainMenu.styleButton(backButton);
+        backButton.setOnAction(e -> stage.setScene(mainMenuScene));
+
+        leftPanel.getChildren().add(backButton);
+    }
+
+    private void updatePanel(VBox rightPanel) {
+        rightPanel.getChildren().clear();
+        rightPanel.setPadding(new Insets(cellSize / 8.0));
+        rightPanel.setAlignment(Pos.TOP_CENTER);
+        rightPanel.setMinHeight(windowHeight);
+        rightPanel.setMinWidth(windowWidth / 6.0);
+        rightPanel.setMaxHeight(windowHeight);
+        rightPanel.setMaxWidth(windowWidth / 6.0);
+    }
+
     private void initBoard(Group root, double diskRadius) {
         for (int r = 0; r < boardSize; r++) {
             for (int c = 0; c < boardSize; c++) {

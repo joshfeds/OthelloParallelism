@@ -1,7 +1,5 @@
-// NOTE: If you are reading this in the repo, this may not compile yet, as certain JavaFX modules must be set in the project first
 package pack;
 
-// no wildcard imports :[
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
@@ -25,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.awt.Point;
-
 
 public class BoardDrawer extends Application {
     public Stage stage;
@@ -74,7 +71,6 @@ public class BoardDrawer extends Application {
         // Make scene responsive to clicks
         getPlayerInput(root, gameTree, nextMoves);
 
-
         // Now, to actually put stuff around the board!
         // This BorderPane places the board in the center, with panels to the left and right.
         BorderPane borderPane = new BorderPane();
@@ -93,7 +89,6 @@ public class BoardDrawer extends Application {
         String botName = "Mr. Othello";
 
         // Left panel with human player's score.
-
         leftPanel.setPadding(new Insets(cellSize / 8.0));
         leftPanel.setAlignment(Pos.TOP_CENTER);
 
@@ -112,7 +107,6 @@ public class BoardDrawer extends Application {
 
 
         // Right panel with bot's score.
-
         rightPanel.setPadding(new Insets(cellSize / 8.0));
         rightPanel.setAlignment(Pos.TOP_CENTER);
         rightPanel.setMinHeight(windowHeight);
@@ -133,10 +127,6 @@ public class BoardDrawer extends Application {
         // Add left and right panels.
         borderPane.setLeft(leftPanel);
         borderPane.setRight(rightPanel);
-
-
-
-
 
         // Draw window containing the group with all our cool graphics
         Scene scene = new Scene(borderPane, windowWidth, windowHeight);
@@ -200,7 +190,6 @@ public class BoardDrawer extends Application {
             boardBorder.setStroke(Color.rgb(0,0,0));
             boardBorder.setStrokeWidth(cellSize / 10.0);
 
-
             root.getChildren().clear();
             root.getChildren().add(boardBorder);
             board = bored.boardState;
@@ -208,11 +197,8 @@ public class BoardDrawer extends Application {
 
             nextMoves.clear();
             for (Point temp : bored.getValidMoveset()) {
-
                 nextMoves.add(new Point(temp.x, temp.y));
             }
-
-
 
             clicked = gameTree.getBestOption(gameTree.roots).getMove();
             System.out.println(clicked);
@@ -234,9 +220,18 @@ public class BoardDrawer extends Application {
                     if (DEBUG) System.out.println("These are the new roots: " + gameTree.roots);
                     break;
                 }
-
             }
+
+            // Update score count from human move.
             updateBoardScore();
+
+            // Small text on right panel to indicate bot's move.
+            Text thinkingText = new Text("Thinking...");
+            thinkingText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+            thinkingText.setFill(Color.WHITE);
+            rightPanel.getChildren().add(thinkingText);
+
+            // Timeline adds a 1 second delay, and then displays bot's move.
             Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
                 root.getChildren().clear();
                 root.getChildren().add(boardBorder);
@@ -252,14 +247,15 @@ public class BoardDrawer extends Application {
 
                 drawNextMoveRings(root, nextMoves);
                 updateBoardScore();
-
             }));
+            // Set timeline in motion so the events play.
             timeline.setCycleCount(1);
             timeline.play();
-
         });
     }
 
+    // Updates the board score counters for each player on the side panels
+    // (and redraws everything else in the process).
     private void updateBoardScore() {
         int [] arr = getPlayerScores();
         updatePanel(leftPanel);
@@ -407,8 +403,6 @@ public class BoardDrawer extends Application {
         // but they haven't been created yet! So the button freezes the program.
         // I just recreate the scene again, now that the button's target scene exists.
         this.mainMenuScene = MainMenu.getMainMenuScene(this.stage, this.boardScene, this.aboutScene);
-
-        // The most important scene
 
         // Pick new random window title on each startup
         String[] titles = {"Parathello: A pursuit in plundering every potential piece by probing possible paths in parallel",

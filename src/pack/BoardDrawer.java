@@ -18,9 +18,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 import java.awt.Point;
 
@@ -122,7 +120,14 @@ public class BoardDrawer extends Application {
         botPiecesText.setFont(Font.font("Verdana", FontWeight.BOLD, 48));
         botPiecesText.setFill(Color.WHITE);
 
-        rightPanel.getChildren().addAll(botNameText, botPiecesText);
+        // Bot profile image.
+        ImageView botImageView = new ImageView();
+        Image botPicture = new Image(getClass().getResourceAsStream("imgs/mrothello.png"));
+        botImageView.setFitHeight(cellSize * 1.5);
+        botImageView.setFitWidth(cellSize * 1.5);
+        botImageView.setImage(botPicture);
+
+        rightPanel.getChildren().addAll(botNameText, botPiecesText, botImageView);
 
         // Add left and right panels.
         borderPane.setLeft(leftPanel);
@@ -135,18 +140,6 @@ public class BoardDrawer extends Application {
         return scene;
     }
 
-    private ImageView getImage(String filepath) throws IOException {
-        InputStream playerImageStream = new FileInputStream(filepath);
-        ImageView playerImageView = new ImageView();
-        Image playerImage = new Image(playerImageStream);
-        playerImageView.setImage(playerImage);
-
-        playerImageView.setFitWidth(1.5 * cellSize);
-        playerImageView.setFitHeight(1.5 * cellSize);
-        playerImageView.setPreserveRatio(true);
-
-        return playerImageView;
-    }
     public void getPlayerInput(Group root, MiniMax gameTree, Set<Point> nextMoves) {
         // mouse click test
         // TODO: Send cell coords back to pack.Board.java when clicked
@@ -260,6 +253,7 @@ public class BoardDrawer extends Application {
         int [] arr = getPlayerScores();
         updatePanel(leftPanel);
 
+        // Update everything in the player/left panel.
         Text humanNameText = new Text("You");
         humanNameText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
         humanNameText.setFill(Color.WHITE);
@@ -269,23 +263,45 @@ public class BoardDrawer extends Application {
 
         updatePanel(rightPanel);
 
+        // Update everything in the bot/right panel.
+        // Bot name.
         Text botNameText = new Text("Mr. Othello");
         botNameText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
         botNameText.setFill(Color.WHITE);
 
+        // Bot score.
         Text botPiecesText = new Text(Integer.toString(arr[1]));
         botPiecesText.setFont(Font.font("Verdana", FontWeight.BOLD, 48));
         botPiecesText.setFill(Color.WHITE);
 
-        rightPanel.getChildren().addAll(botNameText, botPiecesText);
+        // Bot profile image.
+        ImageView botImageView = new ImageView();
+        Image botPicture = new Image(getClass().getResourceAsStream("imgs/mrothello.png"));
+        botImageView.setFitHeight(cellSize * 1.5);
+        botImageView.setFitWidth(cellSize * 1.5);
+        botImageView.setImage(botPicture);
+
+        rightPanel.getChildren().addAll(botNameText, botPiecesText, botImageView);
     }
 
+    // Updates the text in the left panel.
     private void updateText(Text humanNameText, Text humanPiecesText) {
+        // Style text.
         humanPiecesText.setFont(Font.font("Verdana", FontWeight.BOLD, 48));
         humanPiecesText.setFill(Color.WHITE);
 
         leftPanel.getChildren().addAll(humanNameText, humanPiecesText);
 
+        // Human profile iamge.
+        ImageView humanImageView = new ImageView();
+        Image humanPicture = new Image(getClass().getResourceAsStream("imgs/player.png"));
+        humanImageView.setImage(humanPicture);
+        humanImageView.setFitHeight(cellSize * 1.5);
+        humanImageView.setFitWidth(cellSize * 1.5);
+
+        leftPanel.getChildren().add(humanImageView);
+
+        // Back button to main menu.
         Button backButton = new Button("Back");
         MainMenu.styleButton(backButton);
         backButton.setOnAction(e -> stage.setScene(mainMenuScene));

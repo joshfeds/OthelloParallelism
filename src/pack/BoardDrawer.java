@@ -2,6 +2,8 @@
 package pack;
 
 // no wildcard imports :[
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
@@ -16,6 +18,7 @@ import javafx.scene.text.*;
 import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.util.Duration;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -169,7 +172,6 @@ public class BoardDrawer extends Application {
             int colClicked = (int)((mouseX - xOffset) / cellSize);
             int rowClicked = (int)((mouseY - yOffset) / cellSize);
             Point clicked = new Point(rowClicked, colClicked);
-            int randVal = 0;
             if (DEBUG) System.out.println("Cell clicked: " + rowClicked + ", " + colClicked);
 
             if (!nextMoves.contains(clicked)) return;
@@ -210,7 +212,7 @@ public class BoardDrawer extends Application {
                 nextMoves.add(new Point(temp.x, temp.y));
             }
 
-            drawNextMoveRings(root, nextMoves);
+
 
             clicked = gameTree.getBestOption(gameTree.roots).getMove();
             System.out.println(clicked);
@@ -234,43 +236,52 @@ public class BoardDrawer extends Application {
                 }
 
             }
+            updateBoardScore();
+            Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+                root.getChildren().clear();
+                root.getChildren().add(boardBorder);
+                board = bored.boardState;
+                initBoard(root, diskRadius);
 
+                nextMoves.clear();
+                if (DEBUG) System.out.println("Valid moves from bored.getValidMoves: " + bored.getValidMoves());
 
-            root.getChildren().clear();
-            root.getChildren().add(boardBorder);
-            board = bored.boardState;
-            initBoard(root, diskRadius);
+                for (Point temp : bored.getValidMoveset()) {
+                    nextMoves.add(new Point(temp.x, temp.y));
+                }
 
-            nextMoves.clear();
-            if (DEBUG) System.out.println("Valid moves from bored.getValidMoves: " + bored.getValidMoves());
+                drawNextMoveRings(root, nextMoves);
+                updateBoardScore();
 
-            for (Point temp : bored.getValidMoveset()) {
-                nextMoves.add(new Point(temp.x, temp.y));
-            }
+            }));
+            timeline.setCycleCount(1);
+            timeline.play();
 
-            drawNextMoveRings(root, nextMoves);
-            int [] arr = getPlayerScores();
-            updatePanel(leftPanel);
-
-            Text humanNameText = new Text("You");
-            humanNameText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
-            humanNameText.setFill(Color.WHITE);
-
-            Text humanPiecesText = new Text(Integer.toString(arr[0]));
-            updateText(humanNameText, humanPiecesText);
-
-            updatePanel(rightPanel);
-
-            Text botNameText = new Text("Mr. Othello");
-            botNameText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
-            botNameText.setFill(Color.WHITE);
-
-            Text botPiecesText = new Text(Integer.toString(arr[1]));
-            botPiecesText.setFont(Font.font("Verdana", FontWeight.BOLD, 48));
-            botPiecesText.setFill(Color.WHITE);
-
-            rightPanel.getChildren().addAll(botNameText, botPiecesText);
         });
+    }
+
+    private void updateBoardScore() {
+        int [] arr = getPlayerScores();
+        updatePanel(leftPanel);
+
+        Text humanNameText = new Text("You");
+        humanNameText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+        humanNameText.setFill(Color.WHITE);
+
+        Text humanPiecesText = new Text(Integer.toString(arr[0]));
+        updateText(humanNameText, humanPiecesText);
+
+        updatePanel(rightPanel);
+
+        Text botNameText = new Text("Mr. Othello");
+        botNameText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+        botNameText.setFill(Color.WHITE);
+
+        Text botPiecesText = new Text(Integer.toString(arr[1]));
+        botPiecesText.setFont(Font.font("Verdana", FontWeight.BOLD, 48));
+        botPiecesText.setFill(Color.WHITE);
+
+        rightPanel.getChildren().addAll(botNameText, botPiecesText);
     }
 
     private void updateText(Text humanNameText, Text humanPiecesText) {

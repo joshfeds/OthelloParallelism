@@ -2,9 +2,10 @@ package pack;
 
 import java.util.*;
 import java.awt.Point;
-import java.util.concurrent.threadPool;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class MiniMax {
     public final boolean DEBUGGING = true;
@@ -13,7 +14,7 @@ public class MiniMax {
     public ArrayList<Node> roots;
 
     public final int NUM_THREADS = 8; // todo mess with this value??
-    private threadPool threadPool;
+    private ExecutorService threadPool;
 
     public final int LOOKAHEAD = 2; // todo play with this value.
 

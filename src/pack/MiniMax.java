@@ -120,12 +120,14 @@ public class MiniMax {
                     if (child.score > maxChildScore)
                         maxChildScore = child.score;
 
-                    if (maxChildScore > n.getAlpha())
-                        n.setAlpha(maxChildScore);
+                    if (BoardGlobals.isPruningEnabled) {
+                        if (maxChildScore > n.getAlpha())
+                            n.setAlpha(maxChildScore);
 
-                    if (n.getAlpha() >= n.getBeta()) {
-                        if (SCORE_DEBUGGING) System.out.println("PRUNED!");
-                        break;
+                        if (n.getAlpha() >= n.getBeta()) {
+                            if (SCORE_DEBUGGING) System.out.println("PRUNED!");
+                            break;
+                        }
                     }
                 }
 
@@ -141,12 +143,14 @@ public class MiniMax {
                     if (child.score < minChildScore) 
                         minChildScore = child.score;
 
-                    if (minChildScore < n.getBeta())
-                        n.setBeta(minChildScore);
+                    if (BoardGlobals.isPruningEnabled) {
+                        if (minChildScore < n.getBeta())
+                            n.setBeta(minChildScore);
 
-                    if (n.getAlpha() >= n.getBeta()) {
-                        if (SCORE_DEBUGGING) System.out.println("PRUNED!");
-                        break;
+                        if (n.getAlpha() >= n.getBeta()) {
+                            if (SCORE_DEBUGGING) System.out.println("PRUNED!");
+                            break;
+                        }
                     }
                 }
 

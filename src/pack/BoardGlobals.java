@@ -3,6 +3,9 @@ package pack;
 public class BoardGlobals {
     public static final boolean DEBUGGING = false;
 
+    // Alpha Beta pruning can be enabled and disabled.
+    public static final boolean isPruningEnabled = true;
+
     // Board size of the game as of running it.
     public static final int boardSize = 8;
 

@@ -194,24 +194,26 @@ public class MiniMax {
         Node best = null;
         CountDownLatch lookaheadLatch = new CountDownLatch(options.size());
 
+        // Build all necessary subtrees.
         for (Node n : options) {
-            if (SCORE_DEBUGGING) {
-                System.out.println("\tobserving option " + n);
-                n.printState();
-            }
-
-                
             Runnable buildLookaheadTask = () -> {
                 buildLookahead(n, 0);
                 lookaheadLatch.countDown();
             };
 
-            // Make all necessary subtrees.
             threadPool.submit(buildLookaheadTask);
             try {
                 lookaheadLatch.await();
             } catch (InterruptedException e) {
                 System.out.println(e);
+            }
+        }
+
+        // Calculate or update score for each node.
+        for (Node n : options) {
+            if (SCORE_DEBUGGING) {
+                System.out.println("\tobserving option " + n);
+                n.printState();
             }
 
             // Update the move's score.
@@ -220,13 +222,17 @@ public class MiniMax {
             };
             threadPool.submit(updateScoreTask);
 
+            // todo max might not be handled correctly, check it!!!@!!!!!
+
             if (max < n.score) {
                 max = n.score;
                 best = n;
             }
             if (SCORE_DEBUGGING) System.out.println("Score of " + n + ": " + n.score);
+            if (SCORE_DEBUGGING) System.out.println("best updated to " + best);
         }
 
+        if (SCORE_DEBUGGING) System.out.println("returning " + best + " as best!!!");
         return best;
     }
 

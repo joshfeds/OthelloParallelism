@@ -16,7 +16,11 @@ public class ScoreUtil {
     // Count the amount of frontier and interior pieces that will be obtained by the current player.
     // Increments for each interior and decrements for each frontier.
     public static int calculateScore(Point mv, int[][] boardState, int player, HashMap<Point, HashSet<Integer>> validMoves) {
-        // todo Make that move then reverse it??
+
+        if (mv == null) {
+            return 0;
+        }
+
         // Initialize the result to the score of the first tile in the move.
         int result = 0;
         result += calculateSingletonScore(boardState, mv.x, mv.y, player);

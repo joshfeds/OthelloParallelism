@@ -36,6 +36,8 @@ public class BoardDrawer extends Application {
     public static double diskRadius = cellSize * 0.8 / 2.0;
     public static Color BOARD_COLOR = Color.rgb(0, 159, 3);
     public static Color FRAME_COLOR = Color.rgb(72, 35,35);
+    // Length of brief delay between player move and bot move.
+    public static double MOVE_DELAY = 0.5;
     static Board bored = new Board();
     public static int[][] board = bored.boardState;
 
@@ -114,11 +116,13 @@ public class BoardDrawer extends Application {
 
         Text botNameText = new Text(botName);
         botNameText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
-        botNameText.setFill(Color.WHITE);
+        botNameText.setFill(Color.BLACK);
+        botNameText.setStroke(Color.WHITE);
 
         Text botPiecesText = new Text(Integer.toString(botPieces));
         botPiecesText.setFont(Font.font("Verdana", FontWeight.BOLD, 48));
-        botPiecesText.setFill(Color.WHITE);
+        botPiecesText.setFill(Color.BLACK);
+        botPiecesText.setStroke(Color.WHITE);
 
         // Bot profile image.
         ImageView botImageView = new ImageView();
@@ -141,8 +145,7 @@ public class BoardDrawer extends Application {
     }
 
     public void getPlayerInput(Group root, MiniMax gameTree, Set<Point> nextMoves) {
-        // mouse click test
-        // TODO: Send cell coords back to pack.Board.java when clicked
+        // Listens for mouse clicks on valid cells in order to initiate moves.
         root.setOnMouseClicked(event -> {
             double mouseX = event.getSceneX();
             double mouseY = event.getSceneY();
@@ -174,7 +177,6 @@ public class BoardDrawer extends Application {
                     if (DEBUG) System.out.println("These are the new roots: " + gameTree.roots);
                     break;
                 }
-
             }
 
             // Border code from earlier
@@ -225,7 +227,7 @@ public class BoardDrawer extends Application {
             rightPanel.getChildren().add(thinkingText);
 
             // Timeline adds a 1 second delay, and then displays bot's move.
-            Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+            Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(MOVE_DELAY), e -> {
                 root.getChildren().clear();
                 root.getChildren().add(boardBorder);
                 board = bored.boardState;
@@ -244,6 +246,9 @@ public class BoardDrawer extends Application {
             // Set timeline in motion so the events play.
             timeline.setCycleCount(1);
             timeline.play();
+
+            if (DEBUG) System.out.println("num trees: " + gameTree.roots.size());
+            if (gameTree.roots.isEmpty()) System.out.println("NO MORE MOVES");
         });
     }
 
@@ -267,12 +272,14 @@ public class BoardDrawer extends Application {
         // Bot name.
         Text botNameText = new Text("Mr. Othello");
         botNameText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
-        botNameText.setFill(Color.WHITE);
+        botNameText.setFill(Color.BLACK);
+        botNameText.setStroke(Color.WHITE);
 
         // Bot score.
         Text botPiecesText = new Text(Integer.toString(arr[1]));
         botPiecesText.setFont(Font.font("Verdana", FontWeight.BOLD, 48));
-        botPiecesText.setFill(Color.WHITE);
+        botPiecesText.setFill(Color.BLACK);
+        botPiecesText.setStroke(Color.WHITE);
 
         // Bot profile image.
         ImageView botImageView = new ImageView();
@@ -340,11 +347,11 @@ public class BoardDrawer extends Application {
                 switch(board[r][c]) {
                     case 1:
                         diskColor = Color.WHITE;
-                        if (DEBUG) System.out.println("Placed white disk at " + xPosDisk + "," + yPosDisk);
+                        // if (DEBUG) System.out.println("Placed white disk at " + xPosDisk + "," + yPosDisk);
                         break;
                     case 2:
                         diskColor = Color.BLACK;
-                        if (DEBUG) System.out.println("Placed black disk at " + xPosDisk + "," + yPosDisk);
+                        // if (DEBUG) System.out.println("Placed black disk at " + xPosDisk + "," + yPosDisk);
                         break;
                 }
 

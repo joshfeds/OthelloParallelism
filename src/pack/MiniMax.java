@@ -274,7 +274,7 @@ class Node {
     // Functions for debugging output:
 
     public String toString() {
-        return "(" + this.move.x + ", " + this.move.y + ") player " + this.player;
+        return this.move != null ? "(" + this.move.x + ", " + this.move.y + ") player " + this.player : "pass";
     }
 
     public void printState() {

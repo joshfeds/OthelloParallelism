@@ -2,6 +2,9 @@ package pack;
 
 import java.util.*;
 import java.awt.Point;
+import java.util.concurrent.threadPool;
+import java.util.concurrent.Executors;
+import java.util.concurrent.CountDownLatch;
 
 public class MiniMax {
     public final boolean DEBUGGING = true;
@@ -9,11 +12,16 @@ public class MiniMax {
     public Board board;
     public ArrayList<Node> roots;
 
+    public final int NUM_THREADS = 8; // todo mess with this value??
+    private threadPool threadPool;
+
     public final int LOOKAHEAD = 2; // todo play with this value.
 
     MiniMax() throws Exception {
-        // Initialize the ArrayList of root nodes.
+        // Initialize the ArrayList of root nodes and thread pool.
         this.board = new Board();
+        this.threadPool = Executors.newFixedThreadPool(NUM_THREADS);
+
         int [][] parentState = new int[BoardGlobals.boardSize][BoardGlobals.boardSize];
         parentState = BoardUtil.copyState(board.getBoardState());
         this.roots = createNodes(false, parentState,
@@ -184,15 +192,33 @@ public class MiniMax {
 
         int max = Integer.MIN_VALUE;
         Node best = null;
+        CountDownLatch lookaheadLatch = new CountDownLatch(options.size());
+
         for (Node n : options) {
             if (SCORE_DEBUGGING) {
                 System.out.println("\tobserving option " + n);
                 n.printState();
             }
+
+                
+            Runnable buildLookaheadTask = () -> {
+                buildLookahead(n, 0);
+                lookaheadLatch.countDown();
+            };
+
             // Make all necessary subtrees.
-            buildLookahead(n, 0);
+            threadPool.submit(buildLookaheadTask);
+            try {
+                lookaheadLatch.await();
+            } catch (InterruptedException e) {
+                System.out.println(e);
+            }
+
             // Update the move's score.
-            updateMoveScore(n);
+            Runnable updateScoreTask = () -> {
+                updateMoveScore(n);
+            };
+            threadPool.submit(updateScoreTask);
 
             if (max < n.score) {
                 max = n.score;
@@ -202,6 +228,17 @@ public class MiniMax {
         }
 
         return best;
+    }
+
+    public void killThreads() {
+        threadPool.shutdown();
+        try {
+            if (!threadPool.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+                threadPool.shutdownNow();
+            } 
+        } catch (InterruptedException e) {
+            threadPool.shutdownNow();
+        }
     }
 }
 

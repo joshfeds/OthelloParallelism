@@ -16,8 +16,6 @@ public class Board {
 
     private HashMap<Point, HashSet<Integer>> validMoves;
 
-
-    
     public Board() {
         if (BoardGlobals.DEBUGGING) System.out.println("New board created.");
         this.boardState = new int[BoardGlobals.boardSize][BoardGlobals.boardSize];

@@ -207,30 +207,45 @@ public class MiniMax {
             threadPool.submit(buildTask);
         }
 
+        // Wait for all threads to finish.
         try {
             buildLatch.await();
         } catch (InterruptedException e) {
-            System.out.println("Interrupted while waiting for a latch!");
+            System.out.println("Interrupted while waiting for the build lookahead latch!");
         }
-
-        killThreads();
         
         // Calculate scores for existing nodes.
+        CountDownLatch scoreLatch = new CountDownLatch(options.size());
         for (Node n : options) {
             if (SCORE_DEBUGGING) {
                 System.out.println("\tobserving option " + n);
                 n.printState();
             }
-            // Update the move's score.
-            updateMoveScore(n);
 
+            Runnable scoreTask = () -> {
+                updateMoveScore(n);
+                scoreLatch.countDown();
+            };
+
+            threadPool.submit(scoreTask);
+        }
+
+        // Wait for threads to finish.
+        try {
+            scoreLatch.await();
+        } catch (InterruptedException e) {
+            System.out.println("Interrupted while waiting for the score calculation latch!");
+        }
+
+        // Find the best score.
+        for (Node n : options) {
             if (max < n.score) {
                 max = n.score;
                 best = n;
             }
-            if (SCORE_DEBUGGING) System.out.println("Score of " + n + ": " + n.score);
         }
 
+        killThreads();
         return best;
     }
 

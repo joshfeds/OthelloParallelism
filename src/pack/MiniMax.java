@@ -2,18 +2,28 @@ package pack;
 
 import java.util.*;
 import java.awt.Point;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class MiniMax {
-    public final boolean DEBUGGING = true;
+    public final boolean DEBUGGING = false;
     public final boolean SCORE_DEBUGGING = false;
+    public final boolean THREAD_DEBUGGING = true;
     public Board board;
     public ArrayList<Node> roots;
 
-    public final int LOOKAHEAD = 2; // todo play with this value.
+    public final int NUM_THREADS = 8; // todo play with this
+    ExecutorService threadPool;
+    private ThreadLocal<Node> myNode;
+
+    public final int LOOKAHEAD = 7; // todo play with this value.
 
     MiniMax() throws Exception {
         // Initialize the ArrayList of root nodes.
         this.board = new Board();
+        threadPool = Executors.newFixedThreadPool(NUM_THREADS);
         int [][] parentState = new int[BoardGlobals.boardSize][BoardGlobals.boardSize];
         parentState = BoardUtil.copyState(board.getBoardState());
         this.roots = createNodes(false, parentState,
@@ -184,13 +194,52 @@ public class MiniMax {
 
         int max = Integer.MIN_VALUE;
         Node best = null;
+
+        CountDownLatch buildLatch = new CountDownLatch(options.size());
+
+        // Concurrently build lookahead.
+        for (Node n : options) {
+            Runnable buildTask = () -> {
+                if (THREAD_DEBUGGING) System.out.println("Thread " + Thread.currentThread().getId() + 
+                " processing " + n);
+                // Node mine = myNode.get();
+                // buildLookahead(mine, 0);
+                buildLookahead(n, 0);
+                buildLatch.countDown();
+                if (THREAD_DEBUGGING) System.out.println("Thread " + Thread.currentThread().getId() + 
+                " finished execution");
+                if (THREAD_DEBUGGING) System.out.println("current count: " + buildLatch.getCount());
+            };
+
+            threadPool.submit(buildTask);
+            if (THREAD_DEBUGGING) System.out.println("Successfuly submitted a task");
+        }
+
+        try {
+            buildLatch.await();
+        } catch (InterruptedException e) {
+            System.out.println("Interrupted while waiting for a latch!");
+        }
+
+        if (THREAD_DEBUGGING) System.out.println("latch value is 0");
+
+        threadPool.shutdown();
+        try {
+            threadPool.awaitTermination(800, TimeUnit.MILLISECONDS);
+            threadPool.shutdownNow();
+        } catch (InterruptedException e) {
+            System.out.println("Interrupted while waiting for threads to die!");
+        }
+
+        if (THREAD_DEBUGGING) System.out.println("threads shut down");
+        
         for (Node n : options) {
             if (SCORE_DEBUGGING) {
                 System.out.println("\tobserving option " + n);
                 n.printState();
             }
             // Make all necessary subtrees.
-            buildLookahead(n, 0);
+            // buildLookahead(n, 0);
             // Update the move's score.
             updateMoveScore(n);
 
@@ -203,6 +252,16 @@ public class MiniMax {
 
         return best;
     }
+
+    // class BuildLookaheadTask implements Runnable {
+    //     public void run() {
+    //         if (THREAD_DEBUGGING) System.out.println("Thread " + Thread.currentThread().getId() + 
+    //             " processing " + myNode.get());
+    //         Node mine = myNode.get();
+    //         buildLookahead(mine, 0);
+    //         latch.countDown();
+    //     }
+    // }
 }
 
 class Node {

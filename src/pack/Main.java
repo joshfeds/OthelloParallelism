@@ -34,7 +34,8 @@ public class Main {
         gameTree.board.setBoardState(testState, testPlayer);
         gameTree.roots = gameTree.createNodes(true, gameTree.board.getBoardState(),
                 gameTree.board.getValidMoves(), gameTree.board.getCurrentPlayer());
-        System.out.println(Arrays.deepToString(gameTree.board.boardState));
+        // System.out.println(Arrays.deepToString(gameTree.board.boardState));
+        gameTree.board.printBoard();
 
         Node n = gameTree.getBestOption(gameTree.roots);
         long end = System.nanoTime();

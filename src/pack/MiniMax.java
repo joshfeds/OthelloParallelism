@@ -200,19 +200,11 @@ public class MiniMax {
         // Concurrently build lookahead.
         for (Node n : options) {
             Runnable buildTask = () -> {
-                if (THREAD_DEBUGGING) System.out.println("Thread " + Thread.currentThread().getId() + 
-                " processing " + n);
-                // Node mine = myNode.get();
-                // buildLookahead(mine, 0);
                 buildLookahead(n, 0);
                 buildLatch.countDown();
-                if (THREAD_DEBUGGING) System.out.println("Thread " + Thread.currentThread().getId() + 
-                " finished execution");
-                if (THREAD_DEBUGGING) System.out.println("current count: " + buildLatch.getCount());
             };
 
             threadPool.submit(buildTask);
-            if (THREAD_DEBUGGING) System.out.println("Successfuly submitted a task");
         }
 
         try {
@@ -221,25 +213,14 @@ public class MiniMax {
             System.out.println("Interrupted while waiting for a latch!");
         }
 
-        if (THREAD_DEBUGGING) System.out.println("latch value is 0");
-
-        threadPool.shutdown();
-        try {
-            threadPool.awaitTermination(800, TimeUnit.MILLISECONDS);
-            threadPool.shutdownNow();
-        } catch (InterruptedException e) {
-            System.out.println("Interrupted while waiting for threads to die!");
-        }
-
-        if (THREAD_DEBUGGING) System.out.println("threads shut down");
+        killThreads();
         
+        // Calculate scores for existing nodes.
         for (Node n : options) {
             if (SCORE_DEBUGGING) {
                 System.out.println("\tobserving option " + n);
                 n.printState();
             }
-            // Make all necessary subtrees.
-            // buildLookahead(n, 0);
             // Update the move's score.
             updateMoveScore(n);
 
@@ -253,15 +234,15 @@ public class MiniMax {
         return best;
     }
 
-    // class BuildLookaheadTask implements Runnable {
-    //     public void run() {
-    //         if (THREAD_DEBUGGING) System.out.println("Thread " + Thread.currentThread().getId() + 
-    //             " processing " + myNode.get());
-    //         Node mine = myNode.get();
-    //         buildLookahead(mine, 0);
-    //         latch.countDown();
-    //     }
-    // }
+    private void killThreads() {
+        threadPool.shutdown();
+        try {
+            threadPool.awaitTermination(800, TimeUnit.MILLISECONDS);
+            threadPool.shutdownNow();
+        } catch (InterruptedException e) {
+            System.out.println("Interrupted while waiting for threads to die!");
+        }
+    }
 }
 
 class Node {

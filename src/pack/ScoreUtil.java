@@ -6,12 +6,14 @@ import java.util.HashSet;
 
 public class ScoreUtil {
     // Score increments
-    public static final int INTERIOR_SCORE = 1;
+    public static final int INTERIOR_SCORE = 2;
     public static final int FRONTIER_SCORE = -1;
     public static final int CORNER_SCORE = 20;
     public static final int GOOD_BUFFER_SCORE = 1;
     public static final int BAD_BUFFER_SCORE = -3;
     public static final int EDGE_SCORE = 10;
+
+    public static final int YOUR_WINNER_YAY = 1000000000;
 
     // Count the amount of frontier and interior pieces that will be obtained by the current player.
     // Increments for each interior and decrements for each frontier.
@@ -20,13 +22,27 @@ public class ScoreUtil {
         // Initialize the result for us to add scores to.
         int result = 0;
 
+        // Special case: If this move ends the game, determine who won in this scenario and heavily favor them.
+        boolean isOver = true;
+        int numPlayerOne = 0;
+        int numPlayerTwo = 0;
+
         for (int i = 0; i < boardState.length; i++) {
             for (int j = 0; j < boardState.length; j++) {
-                if (boardState[i][j] == 0) continue;
+                if (boardState[i][j] == 0) {
+                    isOver = false;
+                    continue;
+                } else if (boardState[i][j] == 1) {
+                    numPlayerOne++;
+                } else {
+                    numPlayerTwo++;
+                }
                 result += calculateSingletonScore(boardState, i, j, player) * (boardState[i][j] == 2 ? 1 : -1);
             }
         }
 
+        if (isOver)
+            return (numPlayerTwo > numPlayerOne) ? YOUR_WINNER_YAY : -YOUR_WINNER_YAY;
 
         return result;
     }
@@ -60,16 +76,19 @@ public class ScoreUtil {
 
     // Checks surrounding tiles for empty slots.
     public static boolean isInterior(int[][] boardState, int row, int col) {
-        boolean result = true;
-
+        
         for (int i = 0; i < BoardGlobals.xOffsets.length; i++) {
             for (int j = 0; j < BoardGlobals.yOffsets.length; j++) {
-                if (boardState[i][j] == 0)
-                    result = false;
+
+                if ((row + i) < 0 || (row + i) >= boardState.length) continue;
+                if ((col + j) < 0 || (col + j) >= boardState.length) continue;
+
+                if (boardState[row + i][col + j] == 0) {
+                    return false;
+                }
             }
         }
-
-        return result;
+        return true;
     }
 
     public static boolean isBoardEdge(int dimension) {

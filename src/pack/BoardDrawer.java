@@ -28,11 +28,9 @@ public class BoardDrawer extends Application {
     public Scene boardScene;
     public Scene aboutScene;
     public static boolean DEBUG = true;
-    public static int boardSize = 8;
-    // Note: this variable controls the size of almost everything
     public static int cellSize = 100;
-    public static double windowWidth = 1.5 * boardSize * cellSize;
-    public static double windowHeight = 1.01 * boardSize * cellSize;
+    public static double windowWidth = 1.5 * BoardGlobals.boardSize * cellSize;
+    public static double windowHeight = 1.01 * BoardGlobals.boardSize * cellSize;
     public static double diskRadius = cellSize * 0.8 / 2.0;
     public static Color BOARD_COLOR = Color.rgb(0, 159, 3);
     public static Color FRAME_COLOR = Color.rgb(72, 35,35);
@@ -327,8 +325,8 @@ public class BoardDrawer extends Application {
     }
 
     private void initBoard(Group root, double diskRadius) {
-        for (int r = 0; r < boardSize; r++) {
-            for (int c = 0; c < boardSize; c++) {
+        for (int r = 0; r < BoardGlobals.boardSize; r++) {
+            for (int c = 0; c < BoardGlobals.boardSize; c++) {
                 double xPos = c * cellSize;
                 double yPos = r * cellSize;
 

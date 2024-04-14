@@ -35,7 +35,6 @@ public class Main {
 
         // Make the game tree. Should not modify actual board.
         System.out.println("Constructing the game tree...");
-        long start = System.nanoTime();
 
         MiniMax gameTree = new MiniMax();
         gameTree.board.setBoardState(testState, testPlayer);
@@ -44,12 +43,11 @@ public class Main {
         // System.out.println(Arrays.deepToString(gameTree.board.boardState));
         gameTree.board.printBoard();
 
+        long start = System.nanoTime();
         Node n = gameTree.getBestOption(gameTree.roots);
         long end = System.nanoTime();
         gameTree.killThreads();
-        System.out.println("made it here");
-        double runtime = (end - start) * (NANO_TO_SEC);
-        System.out.println("Sample board evaluation finished in " + runtime + " seconds.");
+        System.out.println("Sample board evaluation finished in " + (end - start) + " nanoseconds.");
         System.out.println("We found the best move to be " + n.getMove());
     }
 }

@@ -6,7 +6,7 @@ import java.util.HashSet;
 
 public class ScoreUtil {
     // Score increments
-    public static final int INTERIOR_SCORE = 1;
+    public static final int INTERIOR_SCORE = 2;
     public static final int FRONTIER_SCORE = -1;
     public static final int CORNER_SCORE = 20;
     public static final int GOOD_BUFFER_SCORE = 1;
@@ -60,18 +60,19 @@ public class ScoreUtil {
 
     // Checks surrounding tiles for empty slots.
     public static boolean isInterior(int[][] boardState, int row, int col) {
-        boolean result = true;
-
+        
         for (int i = 0; i < BoardGlobals.xOffsets.length; i++) {
             for (int j = 0; j < BoardGlobals.yOffsets.length; j++) {
+
                 if ((row + i) < 0 || (row + i) >= boardState.length) continue;
                 if ((col + j) < 0 || (col + j) >= boardState.length) continue;
-                if (boardState[row + i][col + j] == 0)
-                    result = false;
+
+                if (boardState[row + i][col + j] == 0) {
+                    return false;
+                }
             }
         }
-
-        return result;
+        return true;
     }
 
     public static boolean isBoardEdge(int dimension) {

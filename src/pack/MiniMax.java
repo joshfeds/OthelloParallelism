@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class MiniMax {
     public final boolean DEBUGGING = false;
@@ -16,7 +17,8 @@ public class MiniMax {
 
     public final int NUM_THREADS = 8; // todo play with this
     ExecutorService threadPool;
-    private ThreadLocal<Node> myNode;
+    ArrayBlockingQueue<Node> toBuild;
+    ArrayBlockingQueue<Node> toScore;
 
     public final int LOOKAHEAD = 7; // todo play with this value.
 
@@ -24,6 +26,8 @@ public class MiniMax {
         // Initialize the ArrayList of root nodes.
         this.board = new Board();
         threadPool = Executors.newFixedThreadPool(NUM_THREADS);
+        toBuild = null;
+        toScore = null;
         int [][] parentState = new int[BoardGlobals.boardSize][BoardGlobals.boardSize];
         parentState = BoardUtil.copyState(board.getBoardState());
         this.roots = createNodes(false, parentState,
@@ -184,29 +188,57 @@ public class MiniMax {
                 createLeaves(n);
 
             ArrayList<Node> children = n.getChildren();
-            for (Node ch : children)
+            for (Node ch : children) {
                 buildLookahead(ch, traversalCount + 1);
+            }
         }
     }
 
     // Returns the node from the list of options with the best score.
     // May update score values and build subtrees.
-    public Node getBestOption(ArrayList<Node> options) {
+public Node getBestOption(ArrayList<Node> options) {
+
+        // Create queues for threads to pull nodes from.
+        // BlockingQueue<Node> buildQueue = new LinkedBlockingQueue<>(options);
+        // BlockingQueue<Node> scoreQueue = new LinkedBlockingQueue<>(options);
+        toBuild = new ArrayBlockingQueue<>(options.size(), true, options);
+        toScore = new ArrayBlockingQueue<>(options.size(), true, options);
 
         int max = Integer.MIN_VALUE;
         Node best = null;
 
         CountDownLatch buildLatch = new CountDownLatch(options.size());
+        // if (THREAD_DEBUGGING)
+            // System.out.println("Latch count at " + buildLatch.getCount());
 
         // Concurrently build lookahead.
-        for (Node n : options) {
+        for (int i = 1; i <= NUM_THREADS; i++) {
             Runnable buildTask = () -> {
-                buildLookahead(n, 0);
-                buildLatch.countDown();
+                while (toBuild.size() > 0) {
+                    Node cur = toBuild.poll();
+                    if (cur == null) break;
+        
+                    buildLookahead(cur, 0);
+                    buildLatch.countDown();
+                }
             };
 
             threadPool.submit(buildTask);
         }
+
+        // for (Node n : options) {
+        //     if (SCORE_DEBUGGING) {
+        //         System.out.println("\tobserving option " + n);
+        //         n.printState();
+        //     }
+
+        //     Runnable buildTask = () -> {
+        //         buildLookahead(n, 0);
+        //         buildLatch.countDown();
+        //     };
+
+        //     threadPool.submit(buildTask);
+        // }
 
         // Wait for all threads to finish.
         try {
@@ -214,22 +246,38 @@ public class MiniMax {
         } catch (InterruptedException e) {
             System.out.println("Interrupted while waiting for the build lookahead latch!");
         }
+
+        if (THREAD_DEBUGGING) System.out.println("built lookahead");
         
         // Calculate scores for existing nodes.
         CountDownLatch scoreLatch = new CountDownLatch(options.size());
-        for (Node n : options) {
-            if (SCORE_DEBUGGING) {
-                System.out.println("\tobserving option " + n);
-                n.printState();
-            }
-
+        for (int i = 1; i <= NUM_THREADS; i++) {
             Runnable scoreTask = () -> {
-                updateMoveScore(n);
-                scoreLatch.countDown();
+                while (toScore.size() > 0) {
+                    Node cur = toScore.poll();
+                    if (cur == null) break;
+        
+                    updateMoveScore(cur);
+                    scoreLatch.countDown();
+                }
             };
 
             threadPool.submit(scoreTask);
         }
+
+        // for (Node n : options) {
+        //     if (SCORE_DEBUGGING) {
+        //         System.out.println("\tobserving option " + n);
+        //         n.printState();
+        //     }
+
+        //     Runnable scoreTask = () -> {
+        //         updateMoveScore(n);
+        //         scoreLatch.countDown();
+        //     };
+
+        //     threadPool.submit(scoreTask);
+        // }
 
         // Wait for threads to finish.
         try {
@@ -237,6 +285,8 @@ public class MiniMax {
         } catch (InterruptedException e) {
             System.out.println("Interrupted while waiting for the score calculation latch!");
         }
+
+        System.out.println("we're done!!");
 
         // Find the best score.
         for (Node n : options) {
@@ -246,11 +296,11 @@ public class MiniMax {
             }
         }
 
-        killThreads();
+        // killThreads();
         return best;
     }
 
-    private void killThreads() {
+    public void killThreads() {
         threadPool.shutdown();
         try {
             threadPool.awaitTermination(800, TimeUnit.MILLISECONDS);

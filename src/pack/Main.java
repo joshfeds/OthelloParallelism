@@ -7,17 +7,6 @@ import java.util.Arrays;
 public class Main {
     public static final double NANO_TO_SEC = 0.000000001;
 
-    // public static final int[][] testState = {
-    //         {0,0,0,0,0,0,0,0},
-    //         {0,0,0,0,0,0,0,0},
-    //         {0,0,0,0,0,0,0,0},
-    //         {0,0,0,1,2,0,0,0},
-    //         {0,0,0,2,1,0,0,0},
-    //         {0,0,0,0,0,0,0,0},
-    //         {0,0,0,0,0,0,0,0},
-    //         {0,0,0,0,0,0,0,0}
-    // };
-
     public static final int[][] testState = {
         {0,0,0,0,0,0,0,0},
         {0,0,2,0,0,0,0,0},

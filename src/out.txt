@@ -1,0 +1,29 @@
+Constructing the game tree...
+0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 
+0 0 0 1 2 0 0 0 
+0 0 0 2 1 0 0 0 
+0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 
+Successfuly submitted a task
+Successfuly submitted a task
+Successfuly submitted a task
+Successfuly submitted a task
+Thread 22 processing (4, 2) player 1
+Thread 24 processing (3, 5) player 1
+Thread 25 processing (5, 3) player 1
+Thread 23 processing (2, 4) player 1
+Thread 22 finished execution
+Thread 23 finished execution
+current count: 2
+current count: 2
+Thread 24 finished execution
+current count: 1
+Thread 25 finished execution
+latch value is 0
+current count: 0
+threads shut down
+Game tree construction finished in 3.80578893E17 sec.
+We found the best move to be java.awt.Point[x=2,y=4]

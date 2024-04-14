@@ -2,18 +2,32 @@ package pack;
 
 import java.util.*;
 import java.awt.Point;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class MiniMax {
-    public final boolean DEBUGGING = true;
+    public final boolean DEBUGGING = false;
     public final boolean SCORE_DEBUGGING = false;
+    public final boolean THREAD_DEBUGGING = true;
     public Board board;
     public ArrayList<Node> roots;
 
-    public final int LOOKAHEAD = 2; // todo play with this value.
+    public final int NUM_THREADS = 3;
+    ExecutorService threadPool;
+    ArrayBlockingQueue<Node> toBuild;
+    ArrayBlockingQueue<Node> toScore;
+
+    public final int LOOKAHEAD = 5;
 
     MiniMax() throws Exception {
         // Initialize the ArrayList of root nodes.
         this.board = new Board();
+        threadPool = Executors.newFixedThreadPool(NUM_THREADS);
+        toBuild = null;
+        toScore = null;
         int [][] parentState = new int[BoardGlobals.boardSize][BoardGlobals.boardSize];
         parentState = BoardUtil.copyState(board.getBoardState());
         this.roots = createNodes(false, parentState,
@@ -174,35 +188,86 @@ public class MiniMax {
                 createLeaves(n);
 
             ArrayList<Node> children = n.getChildren();
-            for (Node ch : children)
+            for (Node ch : children) {
                 buildLookahead(ch, traversalCount + 1);
+            }
         }
     }
 
     // Returns the node from the list of options with the best score.
     // May update score values and build subtrees.
-    public Node getBestOption(ArrayList<Node> options) {
+public Node getBestOption(ArrayList<Node> options) {
 
         int max = Integer.MIN_VALUE;
         Node best = null;
+
+        CountDownLatch buildLatch = new CountDownLatch(options.size());
+
+        // Concurrently build lookahead.
         for (Node n : options) {
             if (SCORE_DEBUGGING) {
                 System.out.println("\tobserving option " + n);
                 n.printState();
             }
-            // Make all necessary subtrees.
-            buildLookahead(n, 0);
-            // Update the move's score.
-            updateMoveScore(n);
 
+            Runnable buildTask = () -> {
+                buildLookahead(n, 0);
+                buildLatch.countDown();
+            };
+
+            threadPool.submit(buildTask);
+        }
+
+        // Wait for all threads to finish.
+        try {
+            buildLatch.await();
+        } catch (InterruptedException e) {
+            System.out.println("Interrupted while waiting for the build lookahead latch!");
+        }
+        
+        // Calculate scores for existing nodes.
+        CountDownLatch scoreLatch = new CountDownLatch(options.size());
+        for (Node n : options) {
+            if (SCORE_DEBUGGING) {
+                System.out.println("\tobserving option " + n);
+                n.printState();
+            }
+
+            Runnable scoreTask = () -> {
+                updateMoveScore(n);
+                scoreLatch.countDown();
+            };
+
+            threadPool.submit(scoreTask);
+        }
+
+        // Wait for threads to finish.
+        try {
+            scoreLatch.await();
+        } catch (InterruptedException e) {
+            System.out.println("Interrupted while waiting for the score calculation latch!");
+        }
+
+        // Find the best score.
+        for (Node n : options) {
             if (max < n.score) {
                 max = n.score;
                 best = n;
             }
-            if (SCORE_DEBUGGING) System.out.println("Score of " + n + ": " + n.score);
         }
 
+        // killThreads();
         return best;
+    }
+
+    public void killThreads() {
+        threadPool.shutdown();
+        try {
+            threadPool.awaitTermination(800, TimeUnit.MILLISECONDS);
+            threadPool.shutdownNow();
+        } catch (InterruptedException e) {
+            System.out.println("Interrupted while waiting for threads to die!");
+        }
     }
 }
 

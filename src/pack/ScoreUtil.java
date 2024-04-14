@@ -64,7 +64,9 @@ public class ScoreUtil {
 
         for (int i = 0; i < BoardGlobals.xOffsets.length; i++) {
             for (int j = 0; j < BoardGlobals.yOffsets.length; j++) {
-                if (boardState[i][j] == 0)
+                if ((row + i) < 0 || (row + i) >= boardState.length) continue;
+                if ((col + j) < 0 || (col + j) >= boardState.length) continue;
+                if (boardState[row + i][col + j] == 0)
                     result = false;
             }
         }

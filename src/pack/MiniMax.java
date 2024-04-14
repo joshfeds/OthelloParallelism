@@ -111,8 +111,9 @@ public class MiniMax {
         if (n.isLeaf()) {
             // If n is a leaf node, get the score from the board class.
             n.score = 0;
-            n.score += ScoreUtil.calculateScore(n.getMove(), n.getStateBeforeMove(), n.getPlayer(),
+            int[][] newState = BoardUtil.applyMove(n.getStateBeforeMove(), n.getPlayer(), n.getMove(),
                     BoardUtil.getValidMoves(n.getStateBeforeMove(), n.getPlayer()));
+            n.score += ScoreUtil.calculateScore(newState, n.getPlayer());
 
             if (SCORE_DEBUGGING)
                 System.out.println("\tLeaf score: " + n.score);
@@ -329,7 +330,7 @@ class Node {
     // Functions for debugging output:
 
     public String toString() {
-        return "(" + this.move.x + ", " + this.move.y + ") player " + this.player;
+        return this.move != null ? "(" + this.move.x + ", " + this.move.y + ") player " + this.player : "pass";
     }
 
     public void printState() {

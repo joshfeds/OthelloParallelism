@@ -15,33 +15,18 @@ public class ScoreUtil {
 
     // Count the amount of frontier and interior pieces that will be obtained by the current player.
     // Increments for each interior and decrements for each frontier.
-    public static int calculateScore(Point mv, int[][] boardState, int player, HashMap<Point, HashSet<Integer>> validMoves) {
+    public static int calculateScore(int[][] boardState, int player) {
 
-        if (mv == null) {
-            return 0;
-        }
-
-        // Initialize the result to the score of the first tile in the move.
+        // Initialize the result for us to add scores to.
         int result = 0;
-        result += calculateSingletonScore(boardState, mv.x, mv.y, player);
 
-        // Get the associated directions to travel.
-        HashSet<Integer> dirs = validMoves.get(mv);
-        for (Integer dir : dirs) {
-            if (BoardGlobals.DEBUGGING) System.out.println("NEW DIRECTION!!!");
-            int curX = mv.x + BoardGlobals.xOffsets[dir];
-            int curY = mv.y + BoardGlobals.yOffsets[dir];
-
-            while (boardState[curX][curY] != player) {
-                if (BoardGlobals.DEBUGGING)
-                    System.out.println("========\nCurrent spot is: " + curX + ", " + curY);
-
-                result += calculateSingletonScore(boardState, curX, curY, player);
-
-                curX += BoardGlobals.xOffsets[dir];
-                curY += BoardGlobals.yOffsets[dir];
+        for (int i = 0; i < boardState.length; i++) {
+            for (int j = 0; j < boardState.length; j++) {
+                if (boardState[i][j] == 0) continue;
+                result += calculateSingletonScore(boardState, i, j, player) * (boardState[i][j] == 2 ? 1 : -1);
             }
         }
+
 
         return result;
     }

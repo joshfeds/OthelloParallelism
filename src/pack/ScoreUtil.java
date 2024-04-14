@@ -13,6 +13,8 @@ public class ScoreUtil {
     public static final int BAD_BUFFER_SCORE = -3;
     public static final int EDGE_SCORE = 10;
 
+    public static final int YOUR_WINNER_YAY = 1000000000;
+
     // Count the amount of frontier and interior pieces that will be obtained by the current player.
     // Increments for each interior and decrements for each frontier.
     public static int calculateScore(int[][] boardState, int player) {
@@ -20,13 +22,27 @@ public class ScoreUtil {
         // Initialize the result for us to add scores to.
         int result = 0;
 
+        // Special case: If this move ends the game, determine who won in this scenario and heavily favor them.
+        boolean isOver = true;
+        int numPlayerOne = 0;
+        int numPlayerTwo = 0;
+
         for (int i = 0; i < boardState.length; i++) {
             for (int j = 0; j < boardState.length; j++) {
-                if (boardState[i][j] == 0) continue;
+                if (boardState[i][j] == 0) {
+                    isOver = false;
+                    continue;
+                } else if (boardState[i][j] == 1) {
+                    numPlayerOne++;
+                } else {
+                    numPlayerTwo++;
+                }
                 result += calculateSingletonScore(boardState, i, j, player) * (boardState[i][j] == 2 ? 1 : -1);
             }
         }
 
+        if (isOver)
+            return (numPlayerTwo > numPlayerOne) ? YOUR_WINNER_YAY : -YOUR_WINNER_YAY;
 
         return result;
     }

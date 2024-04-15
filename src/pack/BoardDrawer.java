@@ -160,7 +160,10 @@ public class BoardDrawer extends Application {
             Point clicked = new Point(rowClicked, colClicked);
             if (DEBUG) System.out.println("Cell clicked: " + rowClicked + ", " + colClicked);
             boolean flag = false;
-            if(nextMoves.isEmpty()) flag = true;
+            if(nextMoves.isEmpty()){
+                System.out.println("White doesnt have a move to make");
+                flag = true;
+            }
             if (!nextMoves.contains(clicked) && !flag) return;
             bored.makeMove(clicked);
             gameTree.board = bored;
@@ -247,12 +250,82 @@ public class BoardDrawer extends Application {
             thinkingText.setFill(Color.WHITE);
             rightPanel.getChildren().add(thinkingText);
 
+            nextMoves.clear();
+            if (DEBUG) System.out.println("Valid moves from bored.getValidMoves: " + bored.getValidMoves());
+
+            for (Point temp : bored.getValidMoveset()) {
+                nextMoves.add(new Point(temp.x, temp.y));
+            }
+            board = bored.boardState;
             // Timeline adds a 1 second delay, and then displays bot's move.
+            boolean finalNoBlack = noBlack;
             Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(MOVE_DELAY), e -> {
                 root.getChildren().clear();
                 root.getChildren().add(boardBorder);
-                board = bored.boardState;
+
                 initBoard(root, diskRadius);
+
+                drawNextMoveRings(root, nextMoves);
+                updateBoardScore();
+                if(isGameOver())
+                    gameOver();
+                if(noWhite && finalNoBlack)
+                    gameOver();
+
+
+
+            }));
+            // Set timeline in motion so the events play.
+            timeline.setCycleCount(1);
+            timeline.play();
+
+            if (DEBUG) System.out.println("num trees: " + gameTree.roots.size());
+            boolean test = nextMoves.isEmpty();
+            boolean test2 = false;
+            while(test && !isGameOver()){
+                System.out.println("black needs to go again");
+                clicked = gameTree.getBestOption(gameTree.roots).getMove();
+                System.out.println(clicked);
+                flag = nextMoves.isEmpty();
+                if (!nextMoves.contains(clicked) && !flag) return;
+                bored.makeMove(clicked);
+                gameTree.board = bored;
+
+                if(!flag){
+                    noBlack = false;
+                    test2 = true;
+                    for(int i = 0; i < gameTree.roots.size(); i++){
+
+                        if(clicked.equals(gameTree.roots.get(i).getMove())){
+                            if (DEBUG) System.out.println("We have found our move within the roots.\n");
+
+                            if (DEBUG) System.out.println("These are the previous roots: " + gameTree.roots);
+
+                            gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
+                                    bored.getValidMoves(), bored.getCurrentPlayer());
+
+                            gameTree.board.printBoard();
+                            if (DEBUG) System.out.println("These are the new roots: " + gameTree.roots);
+                            break;
+                        }
+                    }
+                }
+
+                else{
+                    gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
+                            bored.getValidMoves(), bored.getCurrentPlayer());
+                    noBlack = true;
+
+                }
+                test = !test2 && nextMoves.isEmpty();
+                System.out.println("value of test: " + test);
+                updateBoardScore();
+
+                // Small text on right panel to indicate bot's move.
+                thinkingText = new Text("Thinking...");
+                thinkingText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+                thinkingText.setFill(Color.WHITE);
+                rightPanel.getChildren().add(thinkingText);
 
                 nextMoves.clear();
                 if (DEBUG) System.out.println("Valid moves from bored.getValidMoves: " + bored.getValidMoves());
@@ -260,21 +333,36 @@ public class BoardDrawer extends Application {
                 for (Point temp : bored.getValidMoveset()) {
                     nextMoves.add(new Point(temp.x, temp.y));
                 }
+                board = bored.boardState;
 
-                drawNextMoveRings(root, nextMoves);
-                updateBoardScore();
-                if(isGameOver())
-                    gameOver();
-                if(noWhite && noBlack)
-                    gameOver();
-            }));
-            // Set timeline in motion so the events play.
-            timeline.setCycleCount(1);
-            timeline.play();
+                boolean finalNoBlack1 = noBlack;
+                Timeline timeline2 = new Timeline(new KeyFrame(Duration.seconds(MOVE_DELAY), e -> {
+                    System.out.println("Second Timeline");
+                    root.getChildren().clear();
+                    root.getChildren().add(boardBorder);
 
-            if (DEBUG) System.out.println("num trees: " + gameTree.roots.size());
-            if (gameTree.roots.isEmpty()) System.out.println("NO MORE MOVES");
+                    initBoard(root, diskRadius);
 
+                    drawNextMoveRings(root, nextMoves);
+                    updateBoardScore();
+                    if(isGameOver())
+                        gameOver();
+                    if(noWhite && finalNoBlack1)
+                        gameOver();
+
+
+
+                }));
+                // Set timeline in motion so the events play.
+                timeline2.setCycleCount(1);
+                timeline2.play();
+
+
+                if(test2){
+                    System.out.println("a move was made");
+                    break;
+                }
+            }
         });
     }
     private boolean isGameOver(){

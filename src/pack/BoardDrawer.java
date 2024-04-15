@@ -374,8 +374,8 @@ public class BoardDrawer extends Application {
 
         String playerWinMsg = "You win!";
         String playerLoseMsg = "womp womp";
-        String botWinMsg = "The AI has won.";
-        String botLoseMsg = "Need more threads";
+        String botWinMsg = "I won.";
+        String botLoseMsg = ">:[";
         String playerTieMsg = "It's a tie!?";
         String botTieMsg = "¯\\_(ツ)_/¯";
 
@@ -516,7 +516,7 @@ public class BoardDrawer extends Application {
                            "this is nOT HELLO world, but something much more",
                            "Parathello: Finally, something that's not image processing or matrix multiplication!",
                            "Parathello: Another board game, but not Sudoku or Chess!",
-                           "Fun fact: these random titles were inspired by Terraria. oh btw this game is called Parathello"};
+                           "Parathello: Parathello"};
         String windowTitle = titles[(int)(Math.random() * titles.length)];
 
         // Initially show the main menu

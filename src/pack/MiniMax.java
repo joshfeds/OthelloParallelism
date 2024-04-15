@@ -15,7 +15,7 @@ public class MiniMax {
     public Board board;
     public ArrayList<Node> roots;
 
-    public final int NUM_THREADS = 3;
+    public final int NUM_THREADS = 4;
     ExecutorService threadPool;
     ArrayBlockingQueue<Node> toBuild;
     ArrayBlockingQueue<Node> toScore;

@@ -15,7 +15,7 @@ public class MiniMax {
     public Board board;
     public ArrayList<Node> roots;
 
-    public final int NUM_THREADS = 3;
+    public int numThreads;
     ExecutorService threadPool;
     ArrayBlockingQueue<Node> toBuild;
     ArrayBlockingQueue<Node> toScore;
@@ -25,7 +25,8 @@ public class MiniMax {
     MiniMax() throws Exception {
         // Initialize the ArrayList of root nodes.
         this.board = new Board();
-        threadPool = Executors.newFixedThreadPool(NUM_THREADS);
+        numThreads = 3;
+        threadPool = Executors.newFixedThreadPool(numThreads);
         toBuild = null;
         toScore = null;
         int [][] parentState = new int[BoardGlobals.boardSize][BoardGlobals.boardSize];

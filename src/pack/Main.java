@@ -8,7 +8,18 @@ public class Main {
     public static final double NANO_TO_SEC = 0.000000001;
     public static final int TEST_RUNS = 100;
 
-    public static final int[][] testState = {
+    public static final int[][] testState1 = {
+        {0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0},
+        {0,0,0,1,2,0,0,0},
+        {0,0,0,2,1,0,0,0},
+        {0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0}
+    };
+
+    public static final int[][] testState2 = {
         {0,0,0,0,0,0,0,0},
         {0,0,2,0,0,0,0,0},
         {0,0,0,2,1,0,0,0},
@@ -29,7 +40,7 @@ public class Main {
 
         for (int i = 1; i <= TEST_RUNS; i++) {
             MiniMax gameTree = new MiniMax();
-            gameTree.board.setBoardState(testState, testPlayer);
+            gameTree.board.setBoardState(testState1, testPlayer);
             gameTree.roots = gameTree.createNodes(true, gameTree.board.getBoardState(),
                     gameTree.board.getValidMoves(), gameTree.board.getCurrentPlayer());
             // System.out.println(Arrays.deepToString(gameTree.board.boardState));

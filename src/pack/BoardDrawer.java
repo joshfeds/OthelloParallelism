@@ -145,7 +145,6 @@ public class BoardDrawer extends Application {
     public void getPlayerInput(Group root, MiniMax gameTree, Set<Point> nextMoves) {
         // Listens for mouse clicks on valid cells in order to initiate moves.
         root.setOnMouseClicked(event -> {
-            // Get coordinates on window for every click.
             double mouseX = event.getSceneX();
             double mouseY = event.getSceneY();
             if (DEBUG) System.out.println("Mouse clicked at: (" + mouseX + ", " + mouseY + ")");
@@ -158,30 +157,30 @@ public class BoardDrawer extends Application {
             int rowClicked = (int)((mouseY - yOffset) / cellSize);
             Point clicked = new Point(rowClicked, colClicked);
             if (DEBUG) System.out.println("Cell clicked: " + rowClicked + ", " + colClicked);
-
-            // Click was not on a valid move ring.
-            if (!nextMoves.contains(clicked)) return;
-
-            // Player clicked ring, make the move!
+            boolean flag = false;
+            if(nextMoves.isEmpty()) flag = true;
+            if (!nextMoves.contains(clicked) && !flag) return;
             bored.makeMove(clicked);
             gameTree.board = bored;
+            if(!flag){
+                for(int i = 0; i < gameTree.roots.size(); i++){
+                    if(clicked.equals(gameTree.roots.get(i).getMove())){
+                        if (DEBUG) System.out.println("We have found our move within the roots.\n");
 
-            //
-            for(int i = 0; i < gameTree.roots.size(); i++){
-                if(clicked.equals(gameTree.roots.get(i).getMove())){
-                    if (DEBUG) System.out.println("We have found our move within the roots.\n");
+                        if (DEBUG) System.out.println("These are the previous roots: " + gameTree.roots);
 
-                    if (DEBUG) System.out.println("These are the previous roots: " + gameTree.roots);
+                        gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
+                                bored.getValidMoves(), bored.getCurrentPlayer());
 
-                    gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
-                            bored.getValidMoves(), bored.getCurrentPlayer());
-
-                    gameTree.board.printBoard();
-                    if (DEBUG) System.out.println("These are the new roots: " + gameTree.roots);
-                    break;
+                        gameTree.board.printBoard();
+                        if (DEBUG) System.out.println("These are the new roots: " + gameTree.roots);
+                        break;
+                    }
                 }
             }
 
+            else gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
+                    bored.getValidMoves(), bored.getCurrentPlayer());
             // Border code from earlier
             Rectangle boardBorder = new Rectangle(8 * cellSize, 8 * cellSize);
             boardBorder.setFill(Color.rgb(0,0,0,0));
@@ -198,29 +197,33 @@ public class BoardDrawer extends Application {
                 nextMoves.add(new Point(temp.x, temp.y));
             }
 
-            // Get best move from minimax tree
-            Point botMove = gameTree.getBestOption(gameTree.roots).getMove();
-            System.out.println(botMove);
-            if (nextMoves.isEmpty()) System.out.println("BOT HAS NO MOVES");
-            if (!nextMoves.contains(botMove)) return;
-            bored.makeMove(botMove);
+            clicked = gameTree.getBestOption(gameTree.roots).getMove();
+            System.out.println(clicked);
+            flag = false;
+            if(nextMoves.isEmpty()) flag = true;
+            if (!nextMoves.contains(clicked) && !flag) return;
+            bored.makeMove(clicked);
             gameTree.board = bored;
+            if(!flag){
+                for(int i = 0; i < gameTree.roots.size(); i++){
 
-            for(int i = 0; i < gameTree.roots.size(); i++){
+                    if(clicked.equals(gameTree.roots.get(i).getMove())){
+                        if (DEBUG) System.out.println("We have found our move within the roots.\n");
 
-                if(botMove.equals(gameTree.roots.get(i).getMove())){
-                    if (DEBUG) System.out.println("We have found our move within the roots.\n");
+                        if (DEBUG) System.out.println("These are the previous roots: " + gameTree.roots);
 
-                    if (DEBUG) System.out.println("These are the previous roots: " + gameTree.roots);
+                        gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
+                                bored.getValidMoves(), bored.getCurrentPlayer());
 
-                    gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
-                            bored.getValidMoves(), bored.getCurrentPlayer());
-
-                    gameTree.board.printBoard();
-                    if (DEBUG) System.out.println("These are the new roots: " + gameTree.roots);
-                    break;
+                        gameTree.board.printBoard();
+                        if (DEBUG) System.out.println("These are the new roots: " + gameTree.roots);
+                        break;
+                    }
                 }
             }
+
+            else gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
+                    bored.getValidMoves(), bored.getCurrentPlayer());
 
             // Update score count from human move.
             updateBoardScore();
@@ -330,7 +333,7 @@ public class BoardDrawer extends Application {
         rightPanel.setMaxHeight(windowHeight);
         rightPanel.setMaxWidth(windowWidth / 6.0);
     }
-
+    
     // Updates side panels with various text after game ends.
     private void gameOver() {
         // Count final scores.
@@ -371,6 +374,7 @@ public class BoardDrawer extends Application {
         leftPanel.getChildren().add(playerOutcomeText);
         rightPanel.getChildren().add(botOutcomeText);
     }
+    
     private void initBoard(Group root, double diskRadius) {
         for (int r = 0; r < BoardGlobals.boardSize; r++) {
             for (int c = 0; c < BoardGlobals.boardSize; c++) {
@@ -476,11 +480,12 @@ public class BoardDrawer extends Application {
         String[] titles = {"Parathello: A pursuit in plundering every potential piece by probing possible paths in parallel",
                            "Parathello: Parallel Othello",
                            "Parathello: Othello, but it's optimized in parallel",
-                           "Parathello: You may have a big brain, but your opponent has 3",
-                           "Parathello: You are playing against 3 threads in a trenchcoat",
+                           "Parathello: You may have a big brain, but your opponent has a dozen",
+                           "Parathello: You are playing against 8 threads in a trenchcoat",
                            "this is nOT HELLO world, but something much more",
                            "Parathello: Finally, something that's not image processing or matrix multiplication!",
-                           "Parathello: Another board game, but not Sudoku or Chess!"};
+                           "Parathello: Another board game, but not Sudoku or Chess!",
+                           "Fun fact: these random titles were inspired by Terraria. oh btw this game is called Parathello"};
         String windowTitle = titles[(int)(Math.random() * titles.length)];
 
         // Initially show the main menu

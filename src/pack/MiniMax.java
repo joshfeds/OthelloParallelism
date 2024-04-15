@@ -20,7 +20,7 @@ public class MiniMax {
     ArrayBlockingQueue<Node> toBuild;
     ArrayBlockingQueue<Node> toScore;
 
-    public final int LOOKAHEAD = 5;
+    public final int LOOKAHEAD = 4;
 
     MiniMax() throws Exception {
         // Initialize the ArrayList of root nodes.

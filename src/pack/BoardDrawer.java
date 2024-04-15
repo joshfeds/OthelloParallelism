@@ -333,7 +333,48 @@ public class BoardDrawer extends Application {
         rightPanel.setMaxHeight(windowHeight);
         rightPanel.setMaxWidth(windowWidth / 6.0);
     }
+    
+    // Updates side panels with various text after game ends.
+    private void gameOver() {
+        // Count final scores.
+        int[] finalScores = getPlayerScores();
+        int playerScore = finalScores[0];
+        int botScore = finalScores[1];
 
+        String playerWinMsg = "You win!";
+        String playerLoseMsg = "womp womp";
+        String botWinMsg = "The AI has won.";
+        String botLoseMsg = "Need more threads";
+        String playerTieMsg = "It's a tie!?";
+        String botTieMsg = "¯\\_(ツ)_/¯";
+
+        Text playerOutcomeText = new Text("You");
+        playerOutcomeText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+        playerOutcomeText.setFill(Color.WHITE);
+
+        Text botOutcomeText = new Text("You");
+        botOutcomeText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+        botOutcomeText.setFill(Color.WHITE);
+        // Human player won!!! The robot revolution is delayed.
+        if (playerScore > botScore) {
+            playerOutcomeText.setText(playerWinMsg);
+            botOutcomeText.setText(botLoseMsg);
+        }
+        // Bot player won. bow to our new robot overlord(s)
+        else if (botScore > playerScore) {
+            playerOutcomeText.setText(playerLoseMsg);
+            botOutcomeText.setText(botWinMsg);
+        }
+        // It's a tie!?!?!?!?
+        else {
+            playerOutcomeText.setText(playerTieMsg);
+            botOutcomeText.setText(botTieMsg);
+        }
+        // Add text to panels.
+        leftPanel.getChildren().add(playerOutcomeText);
+        rightPanel.getChildren().add(botOutcomeText);
+    }
+    
     private void initBoard(Group root, double diskRadius) {
         for (int r = 0; r < BoardGlobals.boardSize; r++) {
             for (int c = 0; c < BoardGlobals.boardSize; c++) {

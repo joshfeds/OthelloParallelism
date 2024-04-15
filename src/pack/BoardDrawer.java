@@ -157,26 +157,30 @@ public class BoardDrawer extends Application {
             int rowClicked = (int)((mouseY - yOffset) / cellSize);
             Point clicked = new Point(rowClicked, colClicked);
             if (DEBUG) System.out.println("Cell clicked: " + rowClicked + ", " + colClicked);
-
-            if (!nextMoves.contains(clicked)) return;
+            boolean flag = false;
+            if(nextMoves.isEmpty()) flag = true;
+            if (!nextMoves.contains(clicked) && !flag) return;
             bored.makeMove(clicked);
             gameTree.board = bored;
+            if(!flag){
+                for(int i = 0; i < gameTree.roots.size(); i++){
+                    if(clicked.equals(gameTree.roots.get(i).getMove())){
+                        if (DEBUG) System.out.println("We have found our move within the roots.\n");
 
-            for(int i = 0; i < gameTree.roots.size(); i++){
-                if(clicked.equals(gameTree.roots.get(i).getMove())){
-                    if (DEBUG) System.out.println("We have found our move within the roots.\n");
+                        if (DEBUG) System.out.println("These are the previous roots: " + gameTree.roots);
 
-                    if (DEBUG) System.out.println("These are the previous roots: " + gameTree.roots);
+                        gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
+                                bored.getValidMoves(), bored.getCurrentPlayer());
 
-                    gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
-                            bored.getValidMoves(), bored.getCurrentPlayer());
-
-                    gameTree.board.printBoard();
-                    if (DEBUG) System.out.println("These are the new roots: " + gameTree.roots);
-                    break;
+                        gameTree.board.printBoard();
+                        if (DEBUG) System.out.println("These are the new roots: " + gameTree.roots);
+                        break;
+                    }
                 }
             }
 
+            else gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
+                    bored.getValidMoves(), bored.getCurrentPlayer());
             // Border code from earlier
             Rectangle boardBorder = new Rectangle(8 * cellSize, 8 * cellSize);
             boardBorder.setFill(Color.rgb(0,0,0,0));
@@ -195,25 +199,31 @@ public class BoardDrawer extends Application {
 
             clicked = gameTree.getBestOption(gameTree.roots).getMove();
             System.out.println(clicked);
-            if (!nextMoves.contains(clicked)) return;
+            flag = false;
+            if(nextMoves.isEmpty()) flag = true;
+            if (!nextMoves.contains(clicked) && !flag) return;
             bored.makeMove(clicked);
             gameTree.board = bored;
+            if(!flag){
+                for(int i = 0; i < gameTree.roots.size(); i++){
 
-            for(int i = 0; i < gameTree.roots.size(); i++){
+                    if(clicked.equals(gameTree.roots.get(i).getMove())){
+                        if (DEBUG) System.out.println("We have found our move within the roots.\n");
 
-                if(clicked.equals(gameTree.roots.get(i).getMove())){
-                    if (DEBUG) System.out.println("We have found our move within the roots.\n");
+                        if (DEBUG) System.out.println("These are the previous roots: " + gameTree.roots);
 
-                    if (DEBUG) System.out.println("These are the previous roots: " + gameTree.roots);
+                        gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
+                                bored.getValidMoves(), bored.getCurrentPlayer());
 
-                    gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
-                            bored.getValidMoves(), bored.getCurrentPlayer());
-
-                    gameTree.board.printBoard();
-                    if (DEBUG) System.out.println("These are the new roots: " + gameTree.roots);
-                    break;
+                        gameTree.board.printBoard();
+                        if (DEBUG) System.out.println("These are the new roots: " + gameTree.roots);
+                        break;
+                    }
                 }
             }
+
+            else gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
+                    bored.getValidMoves(), bored.getCurrentPlayer());
 
             // Update score count from human move.
             updateBoardScore();

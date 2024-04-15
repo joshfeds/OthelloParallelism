@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 public class Main {
     public static final double NANO_TO_SEC = 0.000000001;
+    public static final int TEST_RUNS = 100;
 
     public static final int[][] testState = {
         {0,0,0,0,0,0,0,0},
@@ -23,20 +24,28 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         // Make the game tree. Should not modify actual board.
-        System.out.println("Constructing the game tree...");
+        // System.out.println("Constructing the game tree...");
+        double avg = 0;
 
-        MiniMax gameTree = new MiniMax();
-        gameTree.board.setBoardState(testState, testPlayer);
-        gameTree.roots = gameTree.createNodes(true, gameTree.board.getBoardState(),
-                gameTree.board.getValidMoves(), gameTree.board.getCurrentPlayer());
-        // System.out.println(Arrays.deepToString(gameTree.board.boardState));
-        gameTree.board.printBoard();
+        for (int i = 1; i <= TEST_RUNS; i++) {
+            MiniMax gameTree = new MiniMax();
+            gameTree.board.setBoardState(testState, testPlayer);
+            gameTree.roots = gameTree.createNodes(true, gameTree.board.getBoardState(),
+                    gameTree.board.getValidMoves(), gameTree.board.getCurrentPlayer());
+            // System.out.println(Arrays.deepToString(gameTree.board.boardState));
+            // gameTree.board.printBoard();
+    
+            long start = System.nanoTime();
+            Node n = gameTree.getBestOption(gameTree.roots);
+            long end = System.nanoTime();
+            gameTree.killThreads();
+            System.out.println("\tSample board evaluation finished in " + (end - start) + " nanoseconds.");
+            // System.out.println("We found the best move to be " + n.getMove());
+            
+            avg += (end - start);
+        }
 
-        long start = System.nanoTime();
-        Node n = gameTree.getBestOption(gameTree.roots);
-        long end = System.nanoTime();
-        gameTree.killThreads();
-        System.out.println("Sample board evaluation finished in " + (end - start) + " nanoseconds.");
-        System.out.println("We found the best move to be " + n.getMove());
+        avg = avg / TEST_RUNS;
+        System.out.println("average runtime is " + avg);
     }
 }

@@ -145,6 +145,8 @@ public class BoardDrawer extends Application {
     public void getPlayerInput(Group root, MiniMax gameTree, Set<Point> nextMoves) {
         // Listens for mouse clicks on valid cells in order to initiate moves.
         root.setOnMouseClicked(event -> {
+            boolean noWhite;
+            boolean noBlack;
             double mouseX = event.getSceneX();
             double mouseY = event.getSceneY();
             if (DEBUG) System.out.println("Mouse clicked at: (" + mouseX + ", " + mouseY + ")");
@@ -163,6 +165,8 @@ public class BoardDrawer extends Application {
             bored.makeMove(clicked);
             gameTree.board = bored;
             if(!flag){
+                noWhite = false;
+
                 for(int i = 0; i < gameTree.roots.size(); i++){
                     if(clicked.equals(gameTree.roots.get(i).getMove())){
                         if (DEBUG) System.out.println("We have found our move within the roots.\n");
@@ -179,14 +183,18 @@ public class BoardDrawer extends Application {
                 }
             }
 
-            else gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
-                    bored.getValidMoves(), bored.getCurrentPlayer());
+            else{
+                gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
+                        bored.getValidMoves(), bored.getCurrentPlayer());
+                noWhite = true;
+            }
             // Border code from earlier
             Rectangle boardBorder = new Rectangle(8 * cellSize, 8 * cellSize);
             boardBorder.setFill(Color.rgb(0,0,0,0));
             boardBorder.setStroke(Color.rgb(0,0,0));
             boardBorder.setStrokeWidth(cellSize / 10.0);
-
+            if(isGameOver())
+                gameOver();
             root.getChildren().clear();
             root.getChildren().add(boardBorder);
             board = bored.boardState;
@@ -205,6 +213,8 @@ public class BoardDrawer extends Application {
             bored.makeMove(clicked);
             gameTree.board = bored;
             if(!flag){
+                noBlack = false;
+
                 for(int i = 0; i < gameTree.roots.size(); i++){
 
                     if(clicked.equals(gameTree.roots.get(i).getMove())){
@@ -222,8 +232,11 @@ public class BoardDrawer extends Application {
                 }
             }
 
-            else gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
-                    bored.getValidMoves(), bored.getCurrentPlayer());
+            else{
+                gameTree.roots = gameTree.createNodes(true, bored.getBoardState(),
+                        bored.getValidMoves(), bored.getCurrentPlayer());
+                noBlack = true;
+            }
 
             // Update score count from human move.
             updateBoardScore();
@@ -250,6 +263,10 @@ public class BoardDrawer extends Application {
 
                 drawNextMoveRings(root, nextMoves);
                 updateBoardScore();
+                if(isGameOver())
+                    gameOver();
+                if(noWhite && noBlack)
+                    gameOver();
             }));
             // Set timeline in motion so the events play.
             timeline.setCycleCount(1);
@@ -257,9 +274,23 @@ public class BoardDrawer extends Application {
 
             if (DEBUG) System.out.println("num trees: " + gameTree.roots.size());
             if (gameTree.roots.isEmpty()) System.out.println("NO MORE MOVES");
+
         });
     }
+    private boolean isGameOver(){
+        int val = 0;
+        for (int[] arr : board) {
+            for (int piece : arr) {
 
+                if (piece == bored.HUMANPLAYER)
+                    val++;
+                else if (piece == bored.BOTPLAYER)
+                    val++;
+            }
+        }
+
+        return val == BoardGlobals.boardSize * BoardGlobals.boardSize;
+    }
     // Updates the board score counters for each player on the side panels
     // (and redraws everything else in the process).
     private void updateBoardScore() {

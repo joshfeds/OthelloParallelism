@@ -145,6 +145,7 @@ public class BoardDrawer extends Application {
     public void getPlayerInput(Group root, MiniMax gameTree, Set<Point> nextMoves) {
         // Listens for mouse clicks on valid cells in order to initiate moves.
         root.setOnMouseClicked(event -> {
+            // Get coordinates on window for every click.
             double mouseX = event.getSceneX();
             double mouseY = event.getSceneY();
             if (DEBUG) System.out.println("Mouse clicked at: (" + mouseX + ", " + mouseY + ")");
@@ -158,10 +159,14 @@ public class BoardDrawer extends Application {
             Point clicked = new Point(rowClicked, colClicked);
             if (DEBUG) System.out.println("Cell clicked: " + rowClicked + ", " + colClicked);
 
+            // Click was not on a valid move ring.
             if (!nextMoves.contains(clicked)) return;
+
+            // Player clicked ring, make the move!
             bored.makeMove(clicked);
             gameTree.board = bored;
 
+            //
             for(int i = 0; i < gameTree.roots.size(); i++){
                 if(clicked.equals(gameTree.roots.get(i).getMove())){
                     if (DEBUG) System.out.println("We have found our move within the roots.\n");
@@ -193,15 +198,17 @@ public class BoardDrawer extends Application {
                 nextMoves.add(new Point(temp.x, temp.y));
             }
 
-            clicked = gameTree.getBestOption(gameTree.roots).getMove();
-            System.out.println(clicked);
-            if (!nextMoves.contains(clicked)) return;
-            bored.makeMove(clicked);
+            // Get best move from minimax tree
+            Point botMove = gameTree.getBestOption(gameTree.roots).getMove();
+            System.out.println(botMove);
+            if (nextMoves.isEmpty()) System.out.println("BOT HAS NO MOVES");
+            if (!nextMoves.contains(botMove)) return;
+            bored.makeMove(botMove);
             gameTree.board = bored;
 
             for(int i = 0; i < gameTree.roots.size(); i++){
 
-                if(clicked.equals(gameTree.roots.get(i).getMove())){
+                if(botMove.equals(gameTree.roots.get(i).getMove())){
                     if (DEBUG) System.out.println("We have found our move within the roots.\n");
 
                     if (DEBUG) System.out.println("These are the previous roots: " + gameTree.roots);
@@ -324,6 +331,46 @@ public class BoardDrawer extends Application {
         rightPanel.setMaxWidth(windowWidth / 6.0);
     }
 
+    // Updates side panels with various text after game ends.
+    private void gameOver() {
+        // Count final scores.
+        int[] finalScores = getPlayerScores();
+        int playerScore = finalScores[0];
+        int botScore = finalScores[1];
+
+        String playerWinMsg = "You win!";
+        String playerLoseMsg = "womp womp";
+        String botWinMsg = "The AI has won.";
+        String botLoseMsg = "Need more threads";
+        String playerTieMsg = "It's a tie!?";
+        String botTieMsg = "¯\\_(ツ)_/¯";
+
+        Text playerOutcomeText = new Text("You");
+        playerOutcomeText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+        playerOutcomeText.setFill(Color.WHITE);
+
+        Text botOutcomeText = new Text("You");
+        botOutcomeText.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+        botOutcomeText.setFill(Color.WHITE);
+        // Human player won!!! The robot revolution is delayed.
+        if (playerScore > botScore) {
+            playerOutcomeText.setText(playerWinMsg);
+            botOutcomeText.setText(botLoseMsg);
+        }
+        // Bot player won. bow to our new robot overlord(s)
+        else if (botScore > playerScore) {
+            playerOutcomeText.setText(playerLoseMsg);
+            botOutcomeText.setText(botWinMsg);
+        }
+        // It's a tie!?!?!?!?
+        else {
+            playerOutcomeText.setText(playerTieMsg);
+            botOutcomeText.setText(botTieMsg);
+        }
+        // Add text to panels.
+        leftPanel.getChildren().add(playerOutcomeText);
+        rightPanel.getChildren().add(botOutcomeText);
+    }
     private void initBoard(Group root, double diskRadius) {
         for (int r = 0; r < BoardGlobals.boardSize; r++) {
             for (int c = 0; c < BoardGlobals.boardSize; c++) {
@@ -429,12 +476,11 @@ public class BoardDrawer extends Application {
         String[] titles = {"Parathello: A pursuit in plundering every potential piece by probing possible paths in parallel",
                            "Parathello: Parallel Othello",
                            "Parathello: Othello, but it's optimized in parallel",
-                           "Parathello: You may have a big brain, but your opponent has a dozen",
-                           "Parathello: You are playing against 8 threads in a trenchcoat",
+                           "Parathello: You may have a big brain, but your opponent has 3",
+                           "Parathello: You are playing against 3 threads in a trenchcoat",
                            "this is nOT HELLO world, but something much more",
                            "Parathello: Finally, something that's not image processing or matrix multiplication!",
-                           "Parathello: Another board game, but not Sudoku or Chess!",
-                           "Fun fact: these random titles were inspired by Terraria. oh btw this game is called Parathello"};
+                           "Parathello: Another board game, but not Sudoku or Chess!"};
         String windowTitle = titles[(int)(Math.random() * titles.length)];
 
         // Initially show the main menu

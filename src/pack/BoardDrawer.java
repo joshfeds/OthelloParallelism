@@ -27,7 +27,7 @@ public class BoardDrawer extends Application {
     public Scene mainMenuScene;
     public Scene boardScene;
     public Scene aboutScene;
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = false;
     public static int cellSize = 100;
     public static double windowWidth = 1.5 * BoardGlobals.boardSize * cellSize;
     public static double windowHeight = 1.01 * BoardGlobals.boardSize * cellSize;
@@ -161,7 +161,6 @@ public class BoardDrawer extends Application {
             if (DEBUG) System.out.println("Cell clicked: " + rowClicked + ", " + colClicked);
             boolean flag = false;
             if(nextMoves.isEmpty()){
-                System.out.println("White doesnt have a move to make");
                 flag = true;
             }
             if (!nextMoves.contains(clicked) && !flag) return;
@@ -196,8 +195,11 @@ public class BoardDrawer extends Application {
             boardBorder.setFill(Color.rgb(0,0,0,0));
             boardBorder.setStroke(Color.rgb(0,0,0));
             boardBorder.setStrokeWidth(cellSize / 10.0);
-            if(isGameOver())
+            if(isGameOver()){
                 gameOver();
+                gameTree.killThreads();
+            }
+
             root.getChildren().clear();
             root.getChildren().add(boardBorder);
             board = bored.boardState;
@@ -209,7 +211,7 @@ public class BoardDrawer extends Application {
             }
 
             clicked = gameTree.getBestOption(gameTree.roots).getMove();
-            System.out.println(clicked);
+
             flag = false;
             if(nextMoves.isEmpty()) flag = true;
             if (!nextMoves.contains(clicked) && !flag) return;
@@ -267,10 +269,15 @@ public class BoardDrawer extends Application {
 
                 drawNextMoveRings(root, nextMoves);
                 updateBoardScore();
-                if(isGameOver())
+                if(isGameOver()){
                     gameOver();
-                if(noWhite && finalNoBlack)
+                    gameTree.killThreads();
+                }
+
+                if(noWhite && finalNoBlack){
                     gameOver();
+                    gameTree.killThreads();
+                }
 
 
 
@@ -285,7 +292,7 @@ public class BoardDrawer extends Application {
             while(test && !isGameOver()){
                 System.out.println("black needs to go again");
                 clicked = gameTree.getBestOption(gameTree.roots).getMove();
-                System.out.println(clicked);
+
                 flag = nextMoves.isEmpty();
                 if (!nextMoves.contains(clicked) && !flag) return;
                 bored.makeMove(clicked);
@@ -318,7 +325,7 @@ public class BoardDrawer extends Application {
 
                 }
                 test = !test2 && nextMoves.isEmpty();
-                System.out.println("value of test: " + test);
+
                 updateBoardScore();
 
                 // Small text on right panel to indicate bot's move.
@@ -337,7 +344,7 @@ public class BoardDrawer extends Application {
 
                 boolean finalNoBlack1 = noBlack;
                 Timeline timeline2 = new Timeline(new KeyFrame(Duration.seconds(MOVE_DELAY), e -> {
-                    System.out.println("Second Timeline");
+
                     root.getChildren().clear();
                     root.getChildren().add(boardBorder);
 
@@ -345,10 +352,15 @@ public class BoardDrawer extends Application {
 
                     drawNextMoveRings(root, nextMoves);
                     updateBoardScore();
-                    if(isGameOver())
+                    if(isGameOver()){
                         gameOver();
-                    if(noWhite && finalNoBlack1)
+                        gameTree.killThreads();
+                    }
+
+                    if(noWhite && finalNoBlack1){
                         gameOver();
+                        gameTree.killThreads();
+                    }
 
 
 
@@ -492,6 +504,8 @@ public class BoardDrawer extends Application {
         // Add text to panels.
         leftPanel.getChildren().add(playerOutcomeText);
         rightPanel.getChildren().add(botOutcomeText);
+
+
     }
     
     private void initBoard(Group root, double diskRadius) {

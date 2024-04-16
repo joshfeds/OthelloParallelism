@@ -37,5 +37,3 @@ The errors should hopefully disappear.
 A window with our game will appear, and you can play against the first iteration of our AI. Good luck.
 ![](images/parathellodemo.gif)
 
-
-Note: Some frontend polish is missing, like the current scores for each player, and the AI moving instantly. These should all be resolved upon project completion.
